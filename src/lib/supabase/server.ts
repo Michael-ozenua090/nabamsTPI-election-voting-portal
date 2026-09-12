@@ -11,10 +11,8 @@ export function getSanitizedSupabaseUrl(): string {
   url = url.trim();
 
   if (!url) {
-    console.error(
-      '[Supabase Server] CRITICAL ERROR: Neither NEXT_PUBLIC_SUPABASE_URL nor SUPABASE_URL is defined in .env.local!'
-    );
-    throw new Error('Missing Supabase URL. Please check your .env.local file.');
+    console.error('[Supabase Server] Missing Supabase URL in environment variables!');
+    throw new Error('Missing Supabase URL. Please configure SUPABASE_URL.');
   }
 
   // Ensure it has https:// protocol
@@ -26,9 +24,12 @@ export function getSanitizedSupabaseUrl(): string {
 }
 
 export function getServiceRoleKey(): string {
+  // Support both manual and Vercel Supabase Integration names
   let key =
     process.env.SUPABASE_SERVICE_ROLE_KEY ||
+    process.env.SUPABASE_SECRET_KEY ||       // Injected by Vercel Supabase integration
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+    process.env.SUPABASE_ANON_KEY ||         // Injected by Vercel Supabase integration
     '';
 
   // 1. Strip whitespace and rogue quotes that copy/pasting might introduce
@@ -36,9 +37,9 @@ export function getServiceRoleKey(): string {
 
   if (!key) {
     console.error(
-      '[Supabase Server] CRITICAL ERROR: Neither SUPABASE_SERVICE_ROLE_KEY nor NEXT_PUBLIC_SUPABASE_ANON_KEY is defined in .env.local!'
+      '[Supabase Server] CRITICAL ERROR: No Supabase API key found in process.env! Checked: SUPABASE_SERVICE_ROLE_KEY, SUPABASE_SECRET_KEY, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_ANON_KEY.'
     );
-    throw new Error('Missing Supabase Key. Please check your .env.local file.');
+    throw new Error('Missing Supabase Key. Please configure Supabase keys in Vercel.');
   }
 
   // 2. Validate prefix and log

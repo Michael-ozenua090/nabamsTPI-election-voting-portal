@@ -1,7 +1,7 @@
 import { createBrowserClient } from '@supabase/ssr';
 
 export function getSanitizedClientSupabaseUrl(): string {
-  let url = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+  let url = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || '';
   url = url.trim();
 
   if (!url) {
@@ -21,8 +21,11 @@ export function getSanitizedClientSupabaseUrl(): string {
 
 /** Browser-side Supabase client (uses anon key only) */
 export function createClient() {
-  return createBrowserClient(
-    getSanitizedClientSupabaseUrl(),
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
-  );
+  const supabaseAnonKey =
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+    process.env.SUPABASE_ANON_KEY ||
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
+    '';
+
+  return createBrowserClient(getSanitizedClientSupabaseUrl(), supabaseAnonKey);
 }
