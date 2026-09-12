@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Shield } from 'lucide-react';
 
-export function AdminLoginForm() {
+export default function AdminLoginForm() {
   const [error, setError] = useState('');
   const [isPending, startTransition] = useTransition();
 
@@ -15,8 +15,16 @@ export function AdminLoginForm() {
     setError('');
     const fd = new FormData(e.currentTarget);
     startTransition(async () => {
-      const result = await loginAdmin(fd);
-      if (result?.error) setError(result.error);
+      try {
+        const result = await loginAdmin(fd);
+        if (result?.error) {
+          setError(result.error);
+        } else if (result?.success) {
+          window.location.href = '/admin';
+        }
+      } catch (err: any) {
+        setError(err.message || 'An unexpected error occurred.');
+      }
     });
   }
 

@@ -14,22 +14,28 @@ import type { ElectionStatus, ResultsRow } from '@/types/database';
 // Admin Login
 // ─────────────────────────────────────────────────────────────────────
 export async function loginAdmin(formData: FormData) {
-  const email = (formData.get('email') as string)?.trim().toLowerCase();
-  const password = formData.get('password') as string;
+  const email = (formData.get('email') as string || '').trim().toLowerCase();
+  const password = (formData.get('password') as string || '').trim();
 
-  const adminEmail = process.env.ADMIN_EMAIL?.trim().toLowerCase();
-  const adminPassword = process.env.ADMIN_PASSWORD;
+  const expectedEmail = (process.env.ADMIN_EMAIL || '').trim().toLowerCase();
+  const expectedPassword = (process.env.ADMIN_PASSWORD || '').trim();
 
-  if (!adminEmail || !adminPassword) {
-    return { error: 'Admin credentials not configured. Contact the system administrator.' };
+  // Debug logging in terminal
+  console.log('[Admin Auth] Login attempt for:', email);
+  if (!expectedEmail || !expectedPassword) {
+    console.error('[Admin Auth] ERROR: ADMIN_EMAIL or ADMIN_PASSWORD is NOT configured in process.env / .env.local!');
+    return { error: 'Server authentication configuration missing. Please check .env.local.' };
   }
 
-  if (email !== adminEmail || password !== adminPassword) {
+  if (email !== expectedEmail || password !== expectedPassword) {
+    console.warn('[Admin Auth] FAILED: Email or password mismatch.');
     return { error: 'Invalid email or password.' };
   }
 
+  console.log('[Admin Auth] SUCCESS: Authenticating admin session...');
+  
   await setAdminSessionCookie({ email, role: 'admin' });
-  redirect('/admin');
+  return { success: true };
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -68,70 +74,92 @@ export async function setElectionStatus(status: ElectionStatus) {
 // ─────────────────────────────────────────────────────────────────────
 // Results — Final Tally (raw votes + adjustments)
 // ─────────────────────────────────────────────────────────────────────
-export async function getResults(): Promise<ResultsRow[]> {
-  await requireAdmin();
-  const supabase = createAdminSupabaseClient();
+export async function getResults(): Promise<{ rows: ResultsRow[], totalVoters: number, totalVoted: number, error: string | null }> {
+  try {
+    await requireAdmin();
+    const supabase = createAdminSupabaseClient();
 
-  // Raw vote counts per candidate
-  const { data: voteCounts, error: voteErr } = await supabase
-    .from('votes')
-    .select('candidate_id');
+    // Raw vote counts per candidate
+    const { data: voteCounts, error: voteErr } = await supabase
+      .from('votes')
+      .select('candidate_id');
 
-  if (voteErr) throw new Error(voteErr.message);
+    if (voteErr) throw new Error(voteErr.message);
 
-  // Adjustment rows
-  const { data: adjustments, error: adjErr } = await supabase
-    .from('candidate_adjustments')
-    .select('*');
+    // Adjustment rows
+    const { data: adjustments, error: adjErr } = await supabase
+      .from('candidate_adjustments')
+      .select('*');
 
-  if (adjErr) throw new Error(adjErr.message);
+    if (adjErr) throw new Error(adjErr.message);
 
-  // Candidates + positions
-  const { data: candidates, error: candErr } = await supabase
-    .from('candidates')
-    .select('id, full_name, image_url, position_id, positions(title)');
+    // Candidates + positions
+    const { data: candidates, error: candErr } = await supabase
+      .from('candidates')
+      .select('id, full_name, image_url, position_id, positions(title)');
 
-  if (candErr) throw new Error(candErr.message);
+    if (candErr) throw new Error(candErr.message);
 
-  // Build tally map
-  const rawMap: Record<string, number> = {};
-  for (const v of voteCounts ?? []) {
-    const id = v.candidate_id as string;
-    rawMap[id] = (rawMap[id] ?? 0) + 1;
-  }
+    // Voter Turnout
+    const { count: totalVoters, error: v1Err } = await supabase
+      .from('voters')
+      .select('*', { count: 'exact', head: true });
+    if (v1Err) throw new Error(v1Err.message);
 
-  const adjMap: Record<string, number> = {};
-  const adjDetails: Record<string, typeof adjustments> = {};
-  for (const a of adjustments ?? []) {
-    const id = a.candidate_id as string;
-    adjMap[id] = (adjMap[id] ?? 0) + (a.adjustment_votes as number);
-    if (!adjDetails[id]) adjDetails[id] = [];
-    adjDetails[id]!.push(a);
-  }
+    const { count: totalVoted, error: v2Err } = await supabase
+      .from('voters')
+      .select('*', { count: 'exact', head: true })
+      .eq('has_voted', true);
+    if (v2Err) throw new Error(v2Err.message);
 
-  const rows: ResultsRow[] = (candidates ?? []).map((c) => {
-    const raw = rawMap[c.id as string] ?? 0;
-    const adj = adjMap[c.id as string] ?? 0;
+    // Build tally map
+    const rawMap: Record<string, number> = {};
+    for (const v of voteCounts ?? []) {
+      const id = v.candidate_id as string;
+      rawMap[id] = (rawMap[id] ?? 0) + 1;
+    }
+
+    const adjMap: Record<string, number> = {};
+    const adjDetails: Record<string, typeof adjustments> = {};
+    for (const a of adjustments ?? []) {
+      const id = a.candidate_id as string;
+      adjMap[id] = (adjMap[id] ?? 0) + (a.adjustment_votes as number);
+      if (!adjDetails[id]) adjDetails[id] = [];
+      adjDetails[id]!.push(a);
+    }
+
+    const rows: ResultsRow[] = (candidates ?? []).map((c) => {
+      const raw = rawMap[c.id as string] ?? 0;
+      const adj = adjMap[c.id as string] ?? 0;
+      return {
+        candidate_id: c.id as string,
+        full_name: c.full_name as string,
+        image_url: c.image_url as string,
+        position_id: c.position_id as string,
+        position_title: ((c.positions as any)?.title) || ((c.positions as any)?.[0]?.title) || '',
+        raw_votes: raw,
+        adjustment_votes: adj,
+        final_tally: raw + adj,
+        adjustments: (adjDetails[c.id as string] ?? []).map((a) => ({
+          id: a.id as string,
+          adjustment_votes: a.adjustment_votes as number,
+          reason: a.reason as string,
+          authorized_by: a.authorized_by as string,
+          created_at: a.created_at as string,
+        })),
+      };
+    });
+
+    return { rows, totalVoters: totalVoters || 0, totalVoted: totalVoted || 0, error: null };
+  } catch (err: any) {
+    console.error('[Admin Results Action] Error fetching results:', err.message);
     return {
-      candidate_id: c.id as string,
-      full_name: c.full_name as string,
-      image_url: c.image_url as string,
-      position_id: c.position_id as string,
-      position_title: ((c.positions as any)?.title) || ((c.positions as any)?.[0]?.title) || '',
-      raw_votes: raw,
-      adjustment_votes: adj,
-      final_tally: raw + adj,
-      adjustments: (adjDetails[c.id as string] ?? []).map((a) => ({
-        id: a.id as string,
-        adjustment_votes: a.adjustment_votes as number,
-        reason: a.reason as string,
-        authorized_by: a.authorized_by as string,
-        created_at: a.created_at as string,
-      })),
+      rows: [],
+      totalVoters: 0,
+      totalVoted: 0,
+      error: `Database connection error: ${err.message}. Please verify your SUPABASE_SERVICE_ROLE_KEY in .env.local.`,
     };
-  });
-
-  return rows;
+  }
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -287,7 +315,70 @@ export async function resetVoter(matricNumber: string) {
     .eq('matric_number', matricNumber);
   if (error) return { error: error.message };
   revalidatePath('/admin/voters');
+  revalidatePath(`/admin/voters/${matricNumber}`);
   return { success: true };
+}
+
+export async function getPaginatedVoters({
+  page = 1,
+  pageSize = 50,
+  search = '',
+  level = '',
+  programme = '',
+  status = '',
+}: {
+  page?: number;
+  pageSize?: number;
+  search?: string;
+  level?: string;
+  programme?: string;
+  status?: string;
+}) {
+  await requireAdmin();
+  const supabase = createAdminSupabaseClient();
+  const from = (page - 1) * pageSize;
+  const to = from + pageSize - 1;
+
+  let query = supabase.from('voters').select('*', { count: 'exact' });
+
+  // Search by matric number or full name
+  if (search.trim()) {
+    const term = `%${search.trim()}%`;
+    query = query.or(`matric_number.ilike.${term},full_name.ilike.${term}`);
+  }
+
+  if (level && level !== 'All') {
+    query = query.eq('level', level);
+  }
+
+  if (programme && programme !== 'All') {
+    query = query.eq('programme', programme);
+  }
+
+  if (status === 'Voted') {
+    query = query.eq('has_voted', true);
+  } else if (status === 'Pending') {
+    query = query.eq('has_voted', false);
+  }
+
+  const { data, count, error } = await query
+    .order('created_at', { ascending: false })
+    .range(from, to);
+
+  if (error) {
+    console.error('[getPaginatedVoters Error]:', error);
+    return { voters: [], total: 0, totalPages: 0, currentPage: page };
+  }
+
+  const total = count || 0;
+  const totalPages = Math.ceil(total / pageSize);
+
+  return {
+    voters: data || [],
+    total,
+    totalPages,
+    currentPage: page,
+  };
 }
 
 // ─────────────────────────────────────────────────────────────────────

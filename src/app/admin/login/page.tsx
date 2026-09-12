@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { AdminLoginForm } from './AdminLoginForm';
+import AdminLoginForm from './AdminLoginForm';
 
 export const metadata: Metadata = {
   title: 'Admin Login — NABAMS TPI Electoral System',

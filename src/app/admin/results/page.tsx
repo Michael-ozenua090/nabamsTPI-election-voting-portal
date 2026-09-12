@@ -9,10 +9,28 @@ export const metadata: Metadata = { title: 'Live Results — NABAMS TPI Election
 export const dynamic = 'force-dynamic';
 
 export default async function ResultsPage() {
-  const rows = await getResults();
-  const supabase = createAdminSupabaseClient();
-  const { count: totalVoters } = await supabase.from('voters').select('*', { count: 'exact', head: true });
-  const { count: votedCount } = await supabase.from('voters').select('*', { count: 'exact', head: true }).eq('has_voted', true);
+  const { rows, totalVoters, totalVoted, error } = await getResults();
+
+  if (error) {
+    return (
+      <div className="p-6 max-w-5xl mx-auto flex items-center justify-center min-h-[50vh]">
+        <div className="w-full max-w-lg bg-red-900/20 border border-red-500/50 rounded-2xl p-6 text-center">
+          <div className="mx-auto w-12 h-12 bg-red-900/50 rounded-full flex items-center justify-center mb-4">
+            <span className="text-2xl" role="img" aria-label="Error">⚠️</span>
+          </div>
+          <h2 className="text-xl font-bold text-red-400 mb-2">Database Connection Failed</h2>
+          <p className="text-sm text-red-200 mb-4">{error}</p>
+          <div className="text-left text-xs bg-black/30 p-4 rounded-lg font-mono text-red-100 overflow-x-auto">
+            1. Open <span className="text-white">.env.local</span><br/>
+            2. Check <span className="text-white">SUPABASE_SERVICE_ROLE_KEY</span><br/>
+            3. Ensure it starts with <span className="text-green-400">eyJ</span> or <span className="text-green-400">sb_</span><br/>
+            4. Remove any stray quotes around it.
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="p-6 space-y-8 max-w-5xl mx-auto">
       <div className="flex items-center justify-between">
@@ -22,7 +40,7 @@ export default async function ResultsPage() {
         </div>
         <RefreshResultsButton />
       </div>
-      <TurnoutCards totalEligible={totalVoters ?? 0} totalVoted={votedCount ?? 0} />
+      <TurnoutCards totalEligible={totalVoters} totalVoted={totalVoted} />
       <ResultsBoard rows={rows} />
     </div>
   );

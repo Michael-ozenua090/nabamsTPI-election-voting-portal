@@ -24,12 +24,10 @@ function isValidMatric(matric: string): boolean {
 }
 
 // ─────────────────────────────────────────────────────────────────────
-// Login Voter
+// Step 1: Check Voter Status (Matric Only)
 // ─────────────────────────────────────────────────────────────────────
-export async function loginVoter(formData: FormData) {
+export async function checkVoterStatus(formData: FormData) {
   const rawMatric = (formData.get('matric_number') as string) ?? '';
-  const pin = (formData.get('voting_pin') as string) ?? '';
-
   const matric = rawMatric.trim();
 
   if (!isValidMatric(matric)) {
@@ -37,7 +35,6 @@ export async function loginVoter(formData: FormData) {
   }
 
   const supabase = createAdminSupabaseClient();
-
   const { data: voter, error: dbError } = await supabase
     .from('voters')
     .select('*')
@@ -45,22 +42,15 @@ export async function loginVoter(formData: FormData) {
     .single<Voter>();
 
   if (dbError || !voter) {
-    return { error: 'Matric number not found on the accredited voter roll.' };
+    return { error: 'Matric number not found on the accredited voter roll. Contact the NABAMS Electoral Committee.' };
   }
 
-  // Level check
   if (voter.level !== 'ND1' && voter.level !== 'HND1') {
     return {
       error: `Only ND1 and HND1 students are eligible to vote. Your level (${voter.level}) is not eligible.`,
     };
   }
 
-  // PIN check
-  if (!voter.voting_pin || voter.voting_pin.trim() !== pin.trim()) {
-    return { error: 'Incorrect voting PIN. Please try again.' };
-  }
-
-  // Already voted?
   if (voter.has_voted) {
     await setVoterSessionCookie({
       matric_number: voter.matric_number,
@@ -70,14 +60,55 @@ export async function loginVoter(formData: FormData) {
     redirect('/already-voted');
   }
 
-  // Set session cookie
+  // Set the base session cookie. They need this to access /accreditation securely.
   await setVoterSessionCookie({
     matric_number: voter.matric_number,
     level: voter.level,
     full_name: voter.full_name,
   });
 
-  // If uploads are missing — redirect to accreditation
+  if (!voter.voting_pin) {
+    // First time accreditation
+    redirect('/accreditation');
+  }
+
+  // If they have a PIN, prompt the frontend to ask for it
+  return { needsPin: true };
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// Step 1B: Login with PIN
+// ─────────────────────────────────────────────────────────────────────
+export async function loginVoterWithPin(formData: FormData) {
+  const rawMatric = (formData.get('matric_number') as string) ?? '';
+  const rawPin = (formData.get('voting_pin') as string) ?? '';
+  const matric = rawMatric.trim();
+  const pin = rawPin.trim();
+
+  if (!isValidMatric(matric) || pin.length !== 4) {
+    return { error: 'Invalid matric number or PIN.' };
+  }
+
+  const supabase = createAdminSupabaseClient();
+  const { data: voter } = await supabase
+    .from('voters')
+    .select('*')
+    .eq('matric_number', matric)
+    .single<Voter>();
+
+  if (!voter) return { error: 'Voter not found.' };
+
+  if (voter.voting_pin !== pin) {
+    return { error: 'Incorrect voting PIN. Please try again.' };
+  }
+
+  // Session should already be set by checkVoterStatus, but set it again to be safe
+  await setVoterSessionCookie({
+    matric_number: voter.matric_number,
+    level: voter.level,
+    full_name: voter.full_name,
+  });
+
   if (!voter.passport_url || !voter.id_card_url) {
     redirect('/accreditation');
   }
@@ -86,26 +117,41 @@ export async function loginVoter(formData: FormData) {
 }
 
 // ─────────────────────────────────────────────────────────────────────
-// Upload Voter Documents
-// Client must compress images to <500 KB before calling this action.
+// Step 2: Complete Accreditation (Documents + Profile)
 // ─────────────────────────────────────────────────────────────────────
-export async function uploadVoterDocuments(formData: FormData) {
+export async function completeAccreditation(formData: FormData) {
   const session = await getVoterSession();
   if (!session) redirect('/');
 
   const passportFile = formData.get('passport') as File | null;
   const idCardFile = formData.get('id_card') as File | null;
+  const phone = (formData.get('phone_number') as string)?.trim();
+  const email = (formData.get('email') as string)?.trim();
+  const pin = (formData.get('voting_pin') as string)?.trim();
 
   if (!passportFile || !idCardFile) {
     return { error: 'Both passport photo and ID card are required.' };
   }
+  
+  if (!phone || !email || !pin || pin.length !== 4) {
+    return { error: 'All profile fields (Phone, Email, 4-digit PIN) are required.' };
+  }
 
-  const supabase = createAdminSupabaseClient();
+  const supabaseAdmin = createAdminSupabaseClient();
   const matric = session.matric_number;
+
+  // Auto-create bucket if missing
+  const { data: buckets } = await supabaseAdmin.storage.listBuckets();
+  if (!buckets?.some((b) => b.name === 'voter-documents')) {
+    console.log('[Storage] Creating missing voter-documents bucket...');
+    await supabaseAdmin.storage.createBucket('voter-documents', {
+      public: true,
+    });
+  }
 
   // Upload passport
   const passportPath = `${matric}/passport-${Date.now()}.jpg`;
-  const { error: passportErr } = await supabase.storage
+  const { error: passportErr } = await supabaseAdmin.storage
     .from('voter-documents')
     .upload(passportPath, passportFile, {
       cacheControl: '3600',
@@ -119,7 +165,7 @@ export async function uploadVoterDocuments(formData: FormData) {
 
   // Upload ID card
   const idCardPath = `${matric}/id-card-${Date.now()}.jpg`;
-  const { error: idErr } = await supabase.storage
+  const { error: idErr } = await supabaseAdmin.storage
     .from('voter-documents')
     .upload(idCardPath, idCardFile, {
       cacheControl: '3600',
@@ -132,20 +178,23 @@ export async function uploadVoterDocuments(formData: FormData) {
   }
 
   // Get public URLs
-  const { data: passportUrlData } = supabase.storage
+  const { data: passportUrlData } = supabaseAdmin.storage
     .from('voter-documents')
     .getPublicUrl(passportPath);
 
-  const { data: idCardUrlData } = supabase.storage
+  const { data: idCardUrlData } = supabaseAdmin.storage
     .from('voter-documents')
     .getPublicUrl(idCardPath);
 
-  // Update voter record
-  const { error: updateErr } = await supabase
+  // Update voter record with documents AND new profile details
+  const { error: updateErr } = await supabaseAdmin
     .from('voters')
     .update({
       passport_url: passportUrlData.publicUrl,
       id_card_url: idCardUrlData.publicUrl,
+      phone_number: phone,
+      email: email,
+      voting_pin: pin,
     })
     .eq('matric_number', matric);
 

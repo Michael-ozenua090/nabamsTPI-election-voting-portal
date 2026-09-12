@@ -15,7 +15,13 @@ const NAV = [
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const session = await getAdminSession();
-  if (!session) redirect('/admin/login');
+  
+  // If no session (e.g. on /admin/login), just render the page without the sidebar.
+  // Middleware handles actual route protection.
+  if (!session) {
+    return <div className="min-h-screen bg-nabams-dark flex">{children}</div>;
+  }
+
   return (
     <div className="min-h-screen bg-nabams-dark flex">
       {/* Sidebar */}

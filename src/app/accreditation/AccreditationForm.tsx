@@ -1,10 +1,10 @@
 'use client';
 
 import { useState, useRef, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
-import { Camera, CreditCard, CheckCircle, Upload } from 'lucide-react';
+import { Camera, CreditCard, CheckCircle, Upload, Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
-import { uploadVoterDocuments } from '@/app/actions/auth';
+import { Input } from '@/components/ui/Input';
+import { completeAccreditation } from '@/app/actions/auth';
 
 // Client-side canvas compression — max 800px, target < 500KB
 async function compressImage(file: File): Promise<File> {
@@ -129,21 +129,36 @@ export function AccreditationForm({ voterName }: { voterName: string }) {
   const [idCard, setIdCard] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showPin, setShowPin] = useState(false);
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError('');
+    
+    const formData = new FormData(e.currentTarget);
+    const pin = formData.get('voting_pin') as string;
+    const confirmPin = formData.get('confirm_pin') as string;
+
+    if (pin !== confirmPin) {
+      setError('Your Voting PINs do not match. Please re-enter them.');
+      return;
+    }
+    
+    if (pin.length !== 4) {
+      setError('Your Voting PIN must be exactly 4 digits.');
+      return;
+    }
+
     if (!passport || !idCard) {
-      setError('Both your passport photo and ID card are required before you can vote.');
+      setError('Both your passport photo and ID card are required.');
       return;
     }
 
     setLoading(true);
-    const fd = new FormData();
-    fd.set('passport', passport);
-    fd.set('id_card', idCard);
+    formData.set('passport', passport);
+    formData.set('id_card', idCard);
 
-    const result = await uploadVoterDocuments(fd);
+    const result = await completeAccreditation(formData);
     if (result?.error) {
       setError(result.error);
     }
@@ -154,36 +169,108 @@ export function AccreditationForm({ voterName }: { voterName: string }) {
     <form onSubmit={handleSubmit} className="space-y-6">
       <div>
         <p className="text-sm text-gray-300">
-          Welcome, <strong className="text-white">{voterName}</strong>. Before accessing
-          the ballot, please upload:
+          Welcome, <strong className="text-white">{voterName}</strong>.
         </p>
-        <ul className="mt-2 list-inside list-disc text-sm text-gray-400 space-y-1">
-          <li>Your passport photograph</li>
-          <li>Your student ID card</li>
-        </ul>
-        <p className="mt-2 text-xs text-gray-500">
-          Images are compressed automatically. Accepted: JPG, PNG, HEIC.
+        <p className="text-xs text-gray-400 mt-1">
+          Complete your profile and upload your documents to receive your digital ballot.
+        </p>
+      </div>
+      
+      <div className="space-y-4">
+        <Input
+          id="email"
+          name="email"
+          label="Email Address"
+          type="email"
+          placeholder="your.email@example.com"
+          required
+        />
+        
+        <Input
+          id="phone_number"
+          name="phone_number"
+          label="Phone Number"
+          type="tel"
+          placeholder="08012345678"
+          inputMode="numeric"
+          pattern="[0-9]+"
+          required
+        />
+
+        <div className="grid grid-cols-2 gap-4">
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm font-medium text-gray-300" htmlFor="voting_pin">
+              Create Voting PIN
+            </label>
+            <div className="relative">
+              <input
+                id="voting_pin"
+                name="voting_pin"
+                type={showPin ? 'text' : 'password'}
+                inputMode="numeric"
+                maxLength={4}
+                pattern="[0-9]{4}"
+                placeholder="4-digits"
+                required
+                className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 pr-10 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-nabams-green transition-all text-center tracking-widest text-lg"
+              />
+            </div>
+          </div>
+          
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm font-medium text-gray-300" htmlFor="confirm_pin">
+              Confirm PIN
+            </label>
+            <div className="relative">
+              <input
+                id="confirm_pin"
+                name="confirm_pin"
+                type={showPin ? 'text' : 'password'}
+                inputMode="numeric"
+                maxLength={4}
+                pattern="[0-9]{4}"
+                placeholder="4-digits"
+                required
+                className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 pr-10 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-nabams-green transition-all text-center tracking-widest text-lg"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPin((v) => !v)}
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
+                aria-label={showPin ? 'Hide PIN' : 'Show PIN'}
+              >
+                {showPin ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
+          </div>
+        </div>
+        <p className="text-xs text-nabams-gold mt-1">
+          Make sure to remember your 4-digit PIN! You will need it to cast your vote.
         </p>
       </div>
 
-      <FileUploadZone
-        label="Passport Photograph"
-        icon={<Camera className="h-8 w-8" />}
-        id="passport"
-        file={passport}
-        onChange={setPassport}
-      />
+      <div className="pt-2 border-t border-white/10 space-y-4">
+        <h3 className="text-sm font-semibold text-white">Document Uploads</h3>
+        
+        <FileUploadZone
+          label="Passport Photograph"
+          icon={<Camera className="h-8 w-8" />}
+          id="passport"
+          file={passport}
+          onChange={setPassport}
+        />
 
-      <FileUploadZone
-        label="Student ID Card"
-        icon={<CreditCard className="h-8 w-8" />}
-        id="id_card"
-        file={idCard}
-        onChange={setIdCard}
-      />
+        <FileUploadZone
+          label="Student ID Card"
+          icon={<CreditCard className="h-8 w-8" />}
+          id="id_card"
+          file={idCard}
+          onChange={setIdCard}
+        />
+      </div>
 
       {error && (
-        <div className="rounded-xl border border-red-700/50 bg-red-900/20 px-4 py-3 text-sm text-red-300">
+        <div className="rounded-xl border border-red-700/50 bg-red-900/20 px-4 py-3 text-sm text-red-300 text-center">
           {error}
         </div>
       )}
@@ -195,7 +282,7 @@ export function AccreditationForm({ voterName }: { voterName: string }) {
         loading={loading}
         disabled={loading || !passport || !idCard}
       >
-        {loading ? 'Uploading…' : 'Upload & Proceed to Ballot'}
+        {loading ? 'Processing...' : 'Complete Accreditation'}
       </Button>
     </form>
   );
