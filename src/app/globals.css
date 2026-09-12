@@ -1,0 +1,120 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── Google Fonts ───────────────────────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;600;700;800;900&display=swap');
+
+/* ─── CSS Custom Properties ──────────────────────────────────────── */
+:root {
+  --nabams-green: #006600;
+  --nabams-gold: #FFD700;
+  --nabams-dark: #0a1628;
+  --nabams-mid: #0d1f3c;
+}
+
+/* ─── Base ───────────────────────────────────────────────────────── */
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background-color: var(--nabams-dark);
+  color: #e5e7eb;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Prevent scroll behind modals */
+body.modal-open {
+  overflow: hidden;
+}
+
+/* ─── Selection ──────────────────────────────────────────────────── */
+::selection {
+  background: #FFD70033;
+  color: #FFD700;
+}
+
+/* ─── Focus visible (keyboard) ───────────────────────────────────── */
+:focus-visible {
+  outline: 2px solid #FFD700;
+  outline-offset: 2px;
+}
+
+/* ─── Custom scrollbar (Chrome/Edge/Safari) ──────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.03);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 215, 0, 0.3);
+}
+
+/* ─── Utility: glass card ────────────────────────────────────────── */
+.glass-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* ─── bg-white/8 custom (Tailwind doesn't generate fractional 8%) ── */
+.bg-white\/8 {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+/* ─── bg-white\/3 ────────────────────────────────────────────────── */
+.bg-white\/3 {
+  background-color: rgba(255, 255, 255, 0.03);
+}
+
+/* ─── PRINT STYLES (Voting Receipt) ─────────────────────────────── */
+@media print {
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+
+  body {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+  }
+
+  .print\:hidden {
+    display: none !important;
+  }
+
+  /* Ensure receipt card is full width on print */
+  #voting-receipt {
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto;
+    box-shadow: none !important;
+  }
+}
+
+/* ─── Smooth transitions for interactive elements ────────────────── */
+button, a, input, select, textarea {
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ─── Page animation ─────────────────────────────────────────────── */
+main {
+  animation: fadeInPage 0.25s ease-out;
+}
+
+@keyframes fadeInPage {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
