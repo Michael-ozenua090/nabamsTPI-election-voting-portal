@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 /* ─── Google Fonts ───────────────────────────────────────────────── */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
 /* ─── CSS Custom Properties ──────────────────────────────────────── */
 :root {
@@ -11,6 +11,8 @@
   --nabams-gold: #FFD700;
   --nabams-dark: #0a1628;
   --nabams-mid: #0d1f3c;
+  --sky-primary: #0284C7;
+  --sky-dark: #0B2341;
 }
 
 /* ─── Base ───────────────────────────────────────────────────────── */
@@ -20,8 +22,8 @@ html {
 }
 
 body {
-  background-color: var(--nabams-dark);
-  color: #e5e7eb;
+  background-color: #F8FAFC;
+  color: #334155;
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -34,13 +36,13 @@ body.modal-open {
 
 /* ─── Selection ──────────────────────────────────────────────────── */
 ::selection {
-  background: #FFD70033;
-  color: #FFD700;
+  background: #0284C733;
+  color: #012169;
 }
 
 /* ─── Focus visible (keyboard) ───────────────────────────────────── */
 :focus-visible {
-  outline: 2px solid #FFD700;
+  outline: 2px solid #0284C7;
   outline-offset: 2px;
 }
 
@@ -50,25 +52,17 @@ body.modal-open {
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.03);
+  background: #F1F5F9;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.12);
+  background: #CBD5E1;
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 215, 0, 0.3);
+  background: #0284C7;
 }
 
-/* ─── Utility: glass card ────────────────────────────────────────── */
-.glass-card {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-}
-
-/* ─── bg-white/8 custom (Tailwind doesn't generate fractional 8%) ── */
+/* ─── bg-white/8 custom ─────────────────────────────────────────── */
 .bg-white\/8 {
   background-color: rgba(255, 255, 255, 0.08);
 }
@@ -76,6 +70,11 @@ body.modal-open {
 /* ─── bg-white\/3 ────────────────────────────────────────────────── */
 .bg-white\/3 {
   background-color: rgba(255, 255, 255, 0.03);
+}
+
+/* ─── Admin dark sidebar overrides ───────────────────────────────── */
+.admin-sidebar {
+  background-color: #0B2341;
 }
 
 /* ─── PRINT STYLES (Voting Receipt) ─────────────────────────────── */
@@ -101,6 +100,7 @@ body.modal-open {
     max-width: 500px;
     margin: 0 auto;
     box-shadow: none !important;
+    border: 2px solid #e2e8f0 !important;
   }
 }
 

@@ -5,11 +5,6 @@ import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import type { PositionWithCandidates } from '@/types/database';
 
-interface BallotSelection {
-  positionId: string;
-  candidateId: string | null;
-}
-
 interface BallotReviewModalProps {
   open: boolean;
   onClose: () => void;
@@ -40,9 +35,9 @@ export function BallotReviewModal({
       <div className="space-y-4">
         {/* Warning if incomplete */}
         {!allSelected && (
-          <div className="flex items-start gap-3 rounded-xl border border-amber-700/50 bg-amber-900/20 p-4">
-            <AlertTriangle className="h-5 w-5 text-amber-400 flex-shrink-0 mt-0.5" />
-            <p className="text-sm text-amber-300">
+          <div className="flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 p-4">
+            <AlertTriangle className="h-5 w-5 text-amber-500 flex-shrink-0 mt-0.5" />
+            <p className="text-sm text-amber-800">
               You have not selected a candidate for{' '}
               <strong>{unselectedCount}</strong>{' '}
               {unselectedCount === 1 ? 'position' : 'positions'}. Those positions
@@ -52,34 +47,34 @@ export function BallotReviewModal({
         )}
 
         {/* Selections list */}
-        <ul className="max-h-80 divide-y divide-white/8 overflow-y-auto rounded-xl border border-white/10 text-sm">
+        <ul className="max-h-80 divide-y divide-slate-100 overflow-y-auto rounded-xl border border-slate-200 text-sm">
           {positions.map((position) => {
             const candidateId = selections[position.id];
             const candidate = position.candidates.find((c) => c.id === candidateId);
 
             return (
-              <li key={position.id} className="flex items-center justify-between gap-4 px-4 py-3">
+              <li key={position.id} className="flex items-center justify-between gap-4 px-4 py-3 bg-white">
                 <div>
-                  <p className="font-medium text-gray-300">{position.title}</p>
+                  <p className="font-medium text-slate-700">{position.title}</p>
                   {candidate ? (
-                    <p className="mt-0.5 text-nabams-gold font-semibold">
+                    <p className="mt-0.5 text-sky-700 font-semibold">
                       {candidate.full_name}
                     </p>
                   ) : (
-                    <p className="mt-0.5 text-gray-500 italic">Abstaining</p>
+                    <p className="mt-0.5 text-slate-400 italic">Abstaining</p>
                   )}
                 </div>
                 {candidate ? (
-                  <CheckCircle className="h-5 w-5 text-nabams-gold flex-shrink-0" />
+                  <CheckCircle className="h-5 w-5 text-sky-600 flex-shrink-0" />
                 ) : (
-                  <span className="h-5 w-5 flex-shrink-0 rounded-full border-2 border-gray-600" />
+                  <span className="h-5 w-5 flex-shrink-0 rounded-full border-2 border-slate-300" />
                 )}
               </li>
             );
           })}
         </ul>
 
-        <p className="text-xs text-gray-500">
+        <p className="text-xs text-slate-500">
           Once submitted, your ballot is final and cannot be changed.
         </p>
 
@@ -94,7 +89,7 @@ export function BallotReviewModal({
             Go Back
           </Button>
           <Button
-            variant="secondary"
+            variant="primary"
             onClick={onConfirm}
             loading={submitting}
             disabled={submitting}

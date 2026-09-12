@@ -47,23 +47,23 @@ export function Modal({
     >
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+        className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm"
         onClick={onClose}
         aria-hidden="true"
       />
 
       {/* Panel */}
       <div
-        className={`relative w-full ${maxWidth} rounded-2xl border border-white/10 bg-[#0d1f3c] shadow-2xl`}
+        className={`relative w-full ${maxWidth} rounded-2xl border border-slate-200 bg-white shadow-xl`}
       >
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-white/10 px-6 py-4">
-          <h2 id="modal-title" className="text-lg font-bold text-white">
+        <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
+          <h2 id="modal-title" className="text-lg font-bold text-slate-900">
             {title}
           </h2>
           <button
             onClick={onClose}
-            className="rounded-lg p-1.5 text-gray-400 hover:bg-white/10 hover:text-white transition-colors"
+            className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-colors focus-visible:ring-2 focus-visible:ring-sky-500"
             aria-label="Close modal"
           >
             <X size={18} />

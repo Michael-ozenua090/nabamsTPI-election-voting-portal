@@ -23,11 +23,10 @@ export function CandidateCard({
   return (
     <label
       className={[
-        'group relative block cursor-pointer overflow-hidden rounded-xl border transition-all duration-200',
-        'bg-white/5 backdrop-blur-sm',
+        'group relative block cursor-pointer overflow-hidden rounded-xl border transition duration-150',
         checked
-          ? 'border-nabams-gold shadow-lg shadow-yellow-900/30 ring-1 ring-nabams-gold'
-          : 'border-white/10 hover:border-white/25 hover:bg-white/8',
+          ? 'bg-sky-50/40 border-2 border-sky-600 shadow-sm'
+          : 'bg-white border border-slate-200 hover:border-sky-300 hover:shadow-sm',
         disabled ? 'opacity-50 cursor-not-allowed' : '',
       ]
         .filter(Boolean)
@@ -54,7 +53,7 @@ export function CandidateCard({
       />
 
       {/* Photo */}
-      <div className="relative aspect-square overflow-hidden bg-white/5">
+      <div className="relative aspect-square overflow-hidden bg-slate-100">
         {candidate.image_url && !imgError ? (
           <Image
             src={candidate.image_url}
@@ -65,8 +64,8 @@ export function CandidateCard({
             sizes="(max-width: 640px) 50vw, 33vw"
           />
         ) : (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <User className="h-12 w-12 text-gray-600" aria-hidden />
+          <div className="absolute inset-0 flex items-center justify-center bg-slate-100">
+            <User className="h-12 w-12 text-slate-300" aria-hidden />
           </div>
         )}
 
@@ -74,15 +73,15 @@ export function CandidateCard({
         {checked && (
           <span
             aria-hidden
-            className="absolute top-2 right-2 flex h-7 w-7 items-center justify-center rounded-full bg-nabams-gold text-gray-900 shadow-lg"
+            className="absolute top-2 right-2 flex h-7 w-7 items-center justify-center rounded-full bg-sky-600 text-white shadow-md"
           >
             <Check className="h-4 w-4" strokeWidth={3} />
           </span>
         )}
 
-        {/* Gold tint overlay when selected */}
+        {/* Sky tint overlay when selected */}
         {checked && (
-          <div className="absolute inset-0 bg-nabams-gold/8 pointer-events-none" />
+          <div className="absolute inset-0 bg-sky-600/8 pointer-events-none" />
         )}
       </div>
 
@@ -90,13 +89,13 @@ export function CandidateCard({
       <div
         className={[
           'border-t px-3 py-2.5 transition-colors',
-          checked ? 'border-nabams-gold/40 bg-yellow-900/20' : 'border-white/8',
+          checked ? 'border-sky-200 bg-sky-50/60' : 'border-slate-100 bg-white',
         ].join(' ')}
       >
         <p
           className={[
             'line-clamp-2 text-sm leading-snug font-medium text-center',
-            checked ? 'text-nabams-gold' : 'text-gray-200',
+            checked ? 'text-sky-800' : 'text-slate-700',
           ].join(' ')}
         >
           {candidate.full_name}

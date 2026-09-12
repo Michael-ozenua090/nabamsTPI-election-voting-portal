@@ -20,7 +20,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
-  themeColor: '#0a1628',
+  themeColor: '#0284C7',
 };
 
 export default function RootLayout({
@@ -33,8 +33,10 @@ export default function RootLayout({
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link rel="icon" href="/nabams-logo.png" type="image/png" />
+        <link rel="apple-touch-icon" href="/nabams-logo.png" />
       </head>
-      <body className="antialiased">{children}</body>
+      <body className="antialiased bg-slate-50">{children}</body>
     </html>
   );
 }

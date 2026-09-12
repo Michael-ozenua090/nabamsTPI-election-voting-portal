@@ -27,8 +27,8 @@ export default async function VotersPage({
 
   return (
     <div className="p-6 space-y-6 max-w-6xl mx-auto">
-      <h1 className="text-2xl font-bold text-white">Voter Roll</h1>
-      <p className="text-sm text-gray-400">
+      <h1 className="text-2xl font-bold text-slate-900">Voter Roll</h1>
+      <p className="text-sm text-slate-500">
         Manage late accreditations, view upload status, and explore {total} registered voters.
       </p>
       <VotersClient

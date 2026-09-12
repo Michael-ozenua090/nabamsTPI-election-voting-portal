@@ -2,9 +2,8 @@
 
 import { useState, useTransition } from 'react';
 import { loginAdmin } from '@/app/actions/admin';
-import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { Shield } from 'lucide-react';
+import { Shield, Loader2 } from 'lucide-react';
 
 export default function AdminLoginForm() {
   const [error, setError] = useState('');
@@ -29,20 +28,53 @@ export default function AdminLoginForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="mb-4 flex items-center gap-2">
-        <Shield className="h-5 w-5 text-nabams-gold" aria-hidden />
-        <h2 className="text-lg font-bold text-white">Administrator Login</h2>
+    <form onSubmit={handleSubmit} className="space-y-5">
+      <div className="mb-2 flex items-center gap-2">
+        <Shield className="h-5 w-5 text-sky-600" aria-hidden />
+        <h2 className="text-lg font-bold text-slate-900">Administrator Login</h2>
       </div>
-      <Input id="email" name="email" label="Admin Email" type="email" placeholder="hod@polytechnicibadan.edu.ng" required autoComplete="email" />
-      <Input id="password" name="password" label="Password" type="password" placeholder="••••••••" required autoComplete="current-password" />
+
+      <Input
+        id="email"
+        name="email"
+        label="Admin Email"
+        type="email"
+        placeholder="hod@polytechnicibadan.edu.ng"
+        required
+        autoComplete="email"
+      />
+      <Input
+        id="password"
+        name="password"
+        label="Password"
+        type="password"
+        placeholder="••••••••"
+        required
+        autoComplete="current-password"
+      />
+
       {error && (
-        <div className="rounded-xl border border-red-700/50 bg-red-900/20 px-4 py-3 text-sm text-red-300">{error}</div>
+        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {error}
+        </div>
       )}
-      <Button type="submit" fullWidth size="lg" loading={isPending}>
-        {isPending ? 'Authenticating…' : 'Login'}
-      </Button>
-      <p className="text-center text-xs text-gray-500 mt-2">Sessions expire after 1 hour. Student voters use a separate login.</p>
+
+      <button
+        type="submit"
+        disabled={isPending}
+        className="w-full flex items-center justify-center gap-2 py-3 bg-sky-600 hover:bg-sky-700 disabled:bg-slate-300 text-white font-medium rounded-lg shadow-sm transition duration-150 focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-2 text-sm"
+      >
+        {isPending ? (
+          <>
+            <Loader2 className="h-4 w-4 animate-spin" />
+            Authenticating…
+          </>
+        ) : 'Login'}
+      </button>
+
+      <p className="text-center text-xs text-slate-400 mt-2">
+        Sessions expire after 1 hour. Student voters use a separate login.
+      </p>
     </form>
   );
 }

@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { LoginForm } from './LoginForm';
+import { InstitutionalHeader } from '@/components/InstitutionalHeader';
 
 export const metadata: Metadata = {
   title: 'NABAMS TPI - Executive Election Portal',
@@ -9,41 +10,36 @@ export const metadata: Metadata = {
 
 export default function HomePage() {
   return (
-    <main className="min-h-screen bg-nabams-dark flex flex-col">
-      {/* Hero gradient */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -left-40 h-80 w-80 rounded-full bg-nabams-green/20 blur-3xl" />
-        <div className="absolute -top-20 right-0 h-96 w-96 rounded-full bg-nabams-gold/10 blur-3xl" />
-        <div className="absolute bottom-0 left-1/2 h-64 w-64 -translate-x-1/2 rounded-full bg-nabams-green/15 blur-3xl" />
-      </div>
+    <div className="min-h-screen bg-slate-50 flex flex-col">
+      <InstitutionalHeader />
 
-      <div className="relative z-10 flex flex-1 flex-col items-center justify-center px-4 py-12">
-        {/* Branding */}
-        <div className="mb-10 text-center">
-          <div className="inline-flex items-center justify-center h-20 w-20 rounded-2xl border-2 border-nabams-gold/40 bg-nabams-gold/10 mb-5 shadow-2xl shadow-yellow-900/30">
-            <span className="text-4xl" role="img" aria-label="Ballot box">
-              {'\uD83D\uDDF3\uFE0F'}
-            </span>
+      <main className="flex flex-1 flex-col items-center justify-center px-4 py-10">
+        <div className="w-full max-w-md space-y-6">
+          {/* Welcome card */}
+          <div className="bg-white border border-slate-200 shadow-sm rounded-2xl p-6 sm:p-8">
+            <div className="flex items-center gap-3 mb-6 pb-5 border-b border-slate-100">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-sky-50 border border-sky-200 flex-shrink-0">
+                <span className="text-xl" role="img" aria-label="Ballot box">🗳️</span>
+              </div>
+              <div>
+                <h1 className="text-base font-bold text-slate-900 leading-tight">Voter Accreditation</h1>
+                <p className="text-xs text-slate-500 mt-0.5">ND1 &amp; HND1 Students Only</p>
+              </div>
+            </div>
+            <LoginForm />
           </div>
-          <h1 className="text-2xl font-extrabold text-white sm:text-3xl tracking-tight">
-            NABAMS TPI
-          </h1>
-          <p className="mt-1 text-sm font-medium text-nabams-gold uppercase tracking-widest">
-            Executive Election Portal
-          </p>
-          <p className="mt-3 max-w-xs text-sm text-gray-400">
-            The Polytechnic, Ibadan &mdash; Official Student Election
+
+          <p className="text-center text-xs text-slate-400">
+            Eligible voters: ND1 &amp; HND1 (Full Time &amp; DPP) only &nbsp;·&nbsp; Powered by NABAMS Electoral Committee
           </p>
         </div>
+      </main>
 
-        {/* Login form */}
-        <LoginForm />
-
-        {/* Footer */}
-        <p className="mt-8 text-xs text-gray-600">
-          Eligible voters: ND1 &amp; HND1 (Full Time &amp; DPP) only
+      <footer className="border-t border-slate-200 bg-white py-4">
+        <p className="text-center text-xs text-slate-400">
+          &copy; {new Date().getFullYear()} NABAMS TPI Electoral Committee. All rights reserved.
         </p>
-      </div>
-    </main>
+      </footer>
+    </div>
   );
 }

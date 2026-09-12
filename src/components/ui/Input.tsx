@@ -13,7 +13,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         {label && (
           <label
             htmlFor={id}
-            className="text-sm font-medium text-gray-300"
+            className="text-sm font-medium text-slate-700"
           >
             {label}
           </label>
@@ -22,13 +22,13 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           ref={ref}
           id={id}
           className={[
-            'w-full rounded-xl border px-4 py-3 text-white placeholder-gray-500',
-            'bg-white/5 backdrop-blur-sm',
-            'focus:outline-none focus:ring-2 focus:ring-nabams-green focus:border-transparent',
-            'transition-all duration-200',
+            'w-full rounded-lg border px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400',
+            'bg-white',
+            'focus:outline-none focus:ring-2 focus:ring-sky-100 focus:border-sky-500',
+            'transition duration-150',
             error
-              ? 'border-red-500 focus:ring-red-500'
-              : 'border-white/10 hover:border-white/20',
+              ? 'border-red-400 focus:ring-red-100 focus:border-red-500'
+              : 'border-slate-300 hover:border-slate-400',
             className,
           ]
             .filter(Boolean)
@@ -36,9 +36,9 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           {...props}
         />
         {hint && !error && (
-          <p className="text-xs text-gray-500">{hint}</p>
+          <p className="text-xs text-slate-400">{hint}</p>
         )}
-        {error && <p className="text-xs text-red-400">{error}</p>}
+        {error && <p className="text-xs text-red-600">{error}</p>}
       </div>
     );
   }

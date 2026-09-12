@@ -25,14 +25,14 @@ export function PositionBlock({
   return (
     <section aria-labelledby={`position-${positionId}-heading`} className="space-y-4">
       {/* Position header */}
-      <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border-b border-white/10 pb-3">
+      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 border-b border-slate-200 pb-3">
         <div className="flex items-center gap-3">
           <span
             className={[
               'flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full text-xs font-bold',
               isComplete
-                ? 'bg-nabams-gold text-gray-900'
-                : 'bg-white/10 text-gray-400',
+                ? 'bg-sky-600 text-white'
+                : 'bg-slate-100 text-slate-500',
             ].join(' ')}
             aria-hidden
           >
@@ -40,7 +40,7 @@ export function PositionBlock({
           </span>
           <h2
             id={`position-${positionId}-heading`}
-            className="text-xl font-bold text-white sm:text-2xl"
+            className="text-lg sm:text-xl font-bold text-slate-900"
           >
             {title}
           </h2>
@@ -50,24 +50,24 @@ export function PositionBlock({
           <span
             className={[
               'h-2 w-2 rounded-full',
-              isComplete ? 'bg-nabams-gold' : 'bg-gray-600',
+              isComplete ? 'bg-sky-500' : 'bg-slate-300',
             ].join(' ')}
             aria-hidden
           />
           <p
             className={[
               'text-xs font-medium uppercase tracking-wide',
-              isComplete ? 'text-nabams-gold' : 'text-gray-500',
+              isComplete ? 'text-sky-600' : 'text-slate-400',
             ].join(' ')}
           >
-            {isComplete ? '1 selected' : 'Choose 1'}
+            {isComplete ? '1 selected' : 'Select 1 candidate'}
           </p>
         </div>
       </div>
 
       {/* Candidate grid */}
       {candidates.length === 0 ? (
-        <p className="text-sm text-gray-500 italic">
+        <p className="text-sm text-slate-400 italic">
           No candidates registered for this position.
         </p>
       ) : (

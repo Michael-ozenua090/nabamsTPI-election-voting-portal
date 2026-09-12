@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { getVoterSession } from '@/lib/session';
 import { createAdminSupabaseClient } from '@/lib/supabase/server';
 import { BallotClient } from './BallotClient';
+import { InstitutionalHeader } from '@/components/InstitutionalHeader';
 import type { PositionWithCandidates } from '@/types/database';
 
 export const metadata: Metadata = {
@@ -27,21 +28,21 @@ export default async function BallotPage() {
 
   if (status !== 'open') {
     return (
-      <main className="min-h-screen bg-nabams-dark flex items-center justify-center px-4">
-        <div className="max-w-md text-center">
-          <div className="inline-flex h-20 w-20 items-center justify-center rounded-full border border-amber-700/40 bg-amber-900/20 mb-6">
+      <main className="min-h-screen bg-slate-50 flex items-center justify-center px-4">
+        <div className="max-w-md text-center bg-white border border-slate-200 rounded-2xl p-8 shadow-sm">
+          <div className="inline-flex h-20 w-20 items-center justify-center rounded-full border border-amber-200 bg-amber-50 mb-6">
             <span className="text-4xl" role="img" aria-label="Paused">
               {status === 'paused' ? '⏸️' : status === 'closed' ? '🔒' : '⏳'}
             </span>
           </div>
-          <h1 className="text-2xl font-bold text-white">
+          <h1 className="text-2xl font-bold text-slate-900">
             {status === 'paused'
               ? 'Voting is Temporarily Paused'
               : status === 'closed'
               ? 'Polls Have Closed'
               : 'Voting Has Not Started Yet'}
           </h1>
-          <p className="mt-3 text-gray-400">
+          <p className="mt-3 text-slate-500">
             {status === 'paused'
               ? 'The Electoral Officer has paused voting. Please wait and try again shortly.'
               : status === 'closed'
@@ -77,14 +78,17 @@ export default async function BallotPage() {
   );
 
   return (
-    <BallotClient
-      voter={{
-        full_name: voter?.full_name as string,
-        matric_number: session.matric_number,
-        level: session.level,
-        programme: voter?.programme as string,
-      }}
-      positions={positionsWithCandidates}
-    />
+    <div className="min-h-screen bg-slate-50 flex flex-col">
+      <InstitutionalHeader />
+      <BallotClient
+        voter={{
+          full_name: voter?.full_name as string,
+          matric_number: session.matric_number,
+          level: session.level,
+          programme: voter?.programme as string,
+        }}
+        positions={positionsWithCandidates}
+      />
+    </div>
   );
 }
