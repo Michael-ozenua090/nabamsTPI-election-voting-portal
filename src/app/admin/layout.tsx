@@ -20,7 +20,11 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   // If no session (e.g. on /admin/login), just render the page without the sidebar.
   // Middleware handles actual route protection.
   if (!session) {
-    return <div className="min-h-screen bg-slate-50 flex">{children}</div>;
+    return (
+      <div className="min-h-screen w-full bg-slate-50">
+        {children}
+      </div>
+    );
   }
 
   return (
