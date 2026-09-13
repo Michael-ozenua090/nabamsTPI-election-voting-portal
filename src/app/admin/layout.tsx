@@ -14,22 +14,22 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col">
-      {/* Mobile top bar lives inside AdminSidebar */}
-      <div className="md:hidden">
+    <div className="h-screen overflow-hidden bg-slate-50 flex flex-col">
+      {/* Mobile sticky top bar (md:hidden, lives inside AdminSidebar fragment) */}
+      <div className="md:hidden sticky top-0 z-30">
         <AdminSidebar email={session.email} />
       </div>
 
       <div className="flex flex-1 min-h-0">
-        {/* Desktop sidebar */}
+        {/* Desktop sidebar — sticky inside AdminSidebar */}
         <div className="hidden md:block">
           <AdminSidebar email={session.email} />
         </div>
 
-        {/* Main content */}
-        <div className="flex-1 overflow-auto bg-slate-50">
+        {/* Main scrollable content */}
+        <main className="flex-1 overflow-y-auto bg-slate-50">
           {children}
-        </div>
+        </main>
       </div>
     </div>
   );

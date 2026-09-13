@@ -33,9 +33,9 @@ export function AdminSidebar({ email }: AdminSidebarProps) {
   return (
     <>
       {/* ── Desktop Sidebar ── */}
-      <aside className="hidden md:flex md:w-64 flex-col bg-[#0B2341] shadow-xl flex-shrink-0">
+      <aside className="hidden md:flex md:w-64 flex-col bg-[#0B2341] shadow-xl flex-shrink-0 sticky top-0 h-screen">
         {/* Header */}
-        <div className="border-b border-white/10 px-5 py-5">
+        <div className="border-b border-white/10 px-5 py-5 flex-shrink-0">
           <div className="flex items-center gap-3 mb-3">
             <Image
               src="/nabams-logo.png"
@@ -54,8 +54,8 @@ export function AdminSidebar({ email }: AdminSidebarProps) {
           <p className="text-xs text-slate-400 truncate">{email}</p>
         </div>
 
-        {/* Nav */}
-        <nav className="flex-1 px-3 py-4 space-y-1">
+        {/* Nav — scrollable if links overflow */}
+        <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1">
           {NAV.map(({ href, label, icon: Icon, exact }) => {
             const isActive = exact ? pathname === href : pathname.startsWith(href);
             return (
@@ -75,8 +75,8 @@ export function AdminSidebar({ email }: AdminSidebarProps) {
           })}
         </nav>
 
-        {/* Logout */}
-        <div className="border-t border-white/10 p-3">
+        {/* Logout — pinned to bottom */}
+        <div className="flex-shrink-0 border-t border-white/10 p-3 bg-[#091C35]">
           <form action={logoutAdmin}>
             <button
               type="submit"
