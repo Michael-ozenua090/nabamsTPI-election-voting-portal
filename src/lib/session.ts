@@ -90,7 +90,7 @@ export async function verifyAdminSession(
 ): Promise<AdminSessionPayload | null> {
   try {
     const { payload } = await jwtVerify(token, getSecret());
-    if (payload.role !== 'admin') return null;
+    if (payload.role !== 'admin' && payload.role !== 'superadmin') return null;
     return payload as unknown as AdminSessionPayload;
   } catch {
     return null;

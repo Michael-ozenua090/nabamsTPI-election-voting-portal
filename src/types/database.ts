@@ -78,7 +78,7 @@ export interface VoterSessionPayload {
 
 export interface AdminSessionPayload {
   email: string;
-  role: 'admin';
+  role: 'admin' | 'superadmin';
 }
 
 // ─── Results view ────────────────────────────────────────────────────

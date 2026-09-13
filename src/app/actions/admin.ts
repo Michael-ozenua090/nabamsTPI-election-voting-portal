@@ -13,12 +13,20 @@ import type { ElectionStatus, ResultsRow } from '@/types/database';
 // ─────────────────────────────────────────────────────────────────────
 // Admin Login
 // ─────────────────────────────────────────────────────────────────────
+type AdminRole = 'admin' | 'superadmin';
+
+interface AdminAccount {
+  email: string;
+  password: string;
+  role: AdminRole;
+  title: string;
+}
 export async function loginAdmin(formData: FormData) {
   const email = (formData.get('email') as string || '').trim().toLowerCase();
   const password = (formData.get('password') as string || '').trim();
 
   // Authorized admin accounts from environment variables
-  const authorizedAdmins = [
+  const allAdmins: AdminAccount[] = [
     {
       email: (process.env.ADMIN_EMAIL || '').trim().toLowerCase(),
       password: (process.env.ADMIN_PASSWORD || '').trim(),
@@ -31,7 +39,8 @@ export async function loginAdmin(formData: FormData) {
       role: 'admin',
       title: 'Admin',
     },
-  ].filter((admin) => admin.email && admin.password);
+  ];
+  const authorizedAdmins = allAdmins.filter((admin) => admin.email && admin.password);
 
   // Debug logging in terminal
   console.log('[Admin Auth] Login attempt for:', email);
