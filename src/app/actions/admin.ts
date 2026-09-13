@@ -17,24 +17,42 @@ export async function loginAdmin(formData: FormData) {
   const email = (formData.get('email') as string || '').trim().toLowerCase();
   const password = (formData.get('password') as string || '').trim();
 
-  const expectedEmail = (process.env.ADMIN_EMAIL || '').trim().toLowerCase();
-  const expectedPassword = (process.env.ADMIN_PASSWORD || '').trim();
+  // Authorized admin accounts from environment variables
+  const authorizedAdmins = [
+    {
+      email: (process.env.ADMIN_EMAIL || '').trim().toLowerCase(),
+      password: (process.env.ADMIN_PASSWORD || '').trim(),
+      role: 'superadmin',
+      title: 'Super Admin',
+    },
+    {
+      email: (process.env.ADMIN_2_EMAIL || '').trim().toLowerCase(),
+      password: (process.env.ADMIN_2_PASSWORD || '').trim(),
+      role: 'admin',
+      title: 'Admin',
+    },
+  ].filter((admin) => admin.email && admin.password);
 
   // Debug logging in terminal
   console.log('[Admin Auth] Login attempt for:', email);
-  if (!expectedEmail || !expectedPassword) {
-    console.error('[Admin Auth] ERROR: ADMIN_EMAIL or ADMIN_PASSWORD is NOT configured in process.env / .env.local!');
+
+  if (authorizedAdmins.length === 0) {
+    console.error('[Admin Auth] ERROR: No admin accounts configured in process.env / .env.local!');
     return { error: 'Server authentication configuration missing. Please check .env.local.' };
   }
 
-  if (email !== expectedEmail || password !== expectedPassword) {
+  const matched = authorizedAdmins.find(
+    (admin) => admin.email === email && admin.password === password
+  );
+
+  if (!matched) {
     console.warn('[Admin Auth] FAILED: Email or password mismatch.');
     return { error: 'Invalid email or password.' };
   }
 
-  console.log('[Admin Auth] SUCCESS: Authenticating admin session...');
-  
-  await setAdminSessionCookie({ email, role: 'admin' });
+  console.log(`[Admin Auth] SUCCESS: Authenticated as ${matched.title} (${matched.role}).`);
+
+  await setAdminSessionCookie({ email: matched.email, role: matched.role });
   return { success: true };
 }
 
