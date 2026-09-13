@@ -15,28 +15,52 @@ export default async function AdminDashboardPage() {
   const turnout = totalVoters && votedCount ? Math.round((votedCount / totalVoters) * 100) : 0;
 
   const stats = [
-    { label: 'Eligible Voters', value: totalVoters ?? 0, icon: Users, color: 'text-sky-600', bg: 'bg-sky-50', border: 'border-sky-200' },
-    { label: 'Votes Cast', value: votedCount ?? 0, icon: Vote, color: 'text-emerald-600', bg: 'bg-emerald-50', border: 'border-emerald-200' },
-    { label: 'Voter Turnout', value: `${turnout}%`, icon: TrendingUp, color: 'text-indigo-600', bg: 'bg-indigo-50', border: 'border-indigo-200' },
+    {
+      label: 'Eligible Voters',
+      value: totalVoters ?? 0,
+      subtext: 'ND1 + HND1 (Full Time & DPP)',
+      icon: Users,
+    },
+    {
+      label: 'Votes Cast',
+      value: votedCount ?? 0,
+      subtext: `${(totalVoters ?? 0) - (votedCount ?? 0)} yet to vote`,
+      icon: Vote,
+    },
+    {
+      label: 'Voter Turnout',
+      value: `${turnout}%`,
+      subtext: turnout >= 50 ? 'Quorum reached ✓' : 'Below 50%',
+      icon: TrendingUp,
+    },
   ];
 
   return (
     <div className="p-6 space-y-8 max-w-4xl mx-auto">
       <div>
         <h1 className="text-2xl font-bold text-slate-900">Election Dashboard</h1>
-        <p className="mt-1 text-sm text-slate-500">Logged in as: <span className="font-medium text-slate-700">{session?.email}</span></p>
+        <p className="mt-1 text-xs text-slate-600">
+          Logged in as:{' '}
+          <span className="font-semibold text-slate-800">{session?.email}</span>
+        </p>
       </div>
 
       <ElectionControlPanel currentStatus={(config?.status as string) ?? 'pending'} />
 
-      <div className="grid grid-cols-3 gap-4">
-        {stats.map(({ label, value, icon: Icon, color, bg, border }) => (
-          <div key={label} className={`bg-white border ${border} rounded-xl p-5 text-center shadow-sm`}>
-            <div className={`inline-flex h-10 w-10 items-center justify-center rounded-full ${bg} border ${border} mx-auto mb-3`}>
-              <Icon className={`h-5 w-5 ${color}`} />
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        {stats.map(({ label, value, subtext, icon: Icon }) => (
+          <div
+            key={label}
+            className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm flex items-center justify-between"
+          >
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">{label}</p>
+              <p className="text-3xl font-extrabold text-slate-900 mt-1">{String(value)}</p>
+              <p className="text-xs text-sky-700 font-medium mt-1">{subtext}</p>
             </div>
-            <p className={`text-2xl font-bold ${color}`}>{String(value)}</p>
-            <p className="mt-1 text-xs text-slate-500 uppercase tracking-wide">{label}</p>
+            <div className="w-10 h-10 rounded-lg bg-sky-50 border border-sky-100 flex items-center justify-center flex-shrink-0">
+              <Icon className="h-5 w-5 text-sky-600" />
+            </div>
           </div>
         ))}
       </div>

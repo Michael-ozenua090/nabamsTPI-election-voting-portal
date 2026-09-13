@@ -26,19 +26,33 @@ export function ElectionControlPanel({ currentStatus }: { currentStatus: string 
   };
 
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/5 p-6 space-y-4">
+    <div className="rounded-xl border border-slate-200 bg-white p-6 space-y-4 shadow-sm">
       <div className="flex items-center justify-between">
-        <h2 className="font-bold text-white">Election Control</h2>
+        <h2 className="font-bold text-slate-900 text-base">Election Control</h2>
         <Badge variant={statusVariant[status] ?? 'gray'}>{status.toUpperCase()}</Badge>
       </div>
-      {error && <p className="text-sm text-red-400">{error}</p>}
+      {error && (
+        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {error}
+        </div>
+      )}
       <div className="flex flex-wrap gap-3">
-        <Button variant="primary" size="sm" loading={isPending} onClick={() => changeStatus('open')} disabled={status === 'open'}><Play className="h-4 w-4" />Open Polls</Button>
-        <Button variant="outline" size="sm" loading={isPending} onClick={() => changeStatus('paused')} disabled={status === 'paused'}><Pause className="h-4 w-4" />Pause</Button>
-        <Button variant="danger" size="sm" loading={isPending} onClick={() => changeStatus('closed')} disabled={status === 'closed'}><Lock className="h-4 w-4" />Close Election</Button>
-        <Button variant="ghost" size="sm" loading={isPending} onClick={() => changeStatus('pending')} disabled={status === 'pending'}><RotateCcw className="h-4 w-4" />Reset to Pending</Button>
+        <Button variant="primary" size="sm" loading={isPending} onClick={() => changeStatus('open')} disabled={status === 'open'}>
+          <Play className="h-4 w-4" />Open Polls
+        </Button>
+        <Button variant="outline" size="sm" loading={isPending} onClick={() => changeStatus('paused')} disabled={status === 'paused'}>
+          <Pause className="h-4 w-4" />Pause
+        </Button>
+        <Button variant="danger" size="sm" loading={isPending} onClick={() => changeStatus('closed')} disabled={status === 'closed'}>
+          <Lock className="h-4 w-4" />Close Election
+        </Button>
+        <Button variant="ghost" size="sm" loading={isPending} onClick={() => changeStatus('pending')} disabled={status === 'pending'}>
+          <RotateCcw className="h-4 w-4" />Reset to Pending
+        </Button>
       </div>
-      <p className="text-xs text-gray-500">Current status: <strong className="text-gray-300">{status}</strong>. Only "open" allows ballot submissions.</p>
+      <p className="text-xs text-slate-500">
+        Current status: <strong className="text-slate-800">{status}</strong>. Only "open" allows ballot submissions.
+      </p>
     </div>
   );
 }

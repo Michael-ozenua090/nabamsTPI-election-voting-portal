@@ -39,27 +39,27 @@ export function AdjustmentsClient({ positions, adjustments }: AdjustmentsClientP
       </div>
 
       {adjustments.length === 0 ? (
-        <div className="rounded-2xl border border-white/10 bg-white/5 p-10 text-center">
-          <p className="text-gray-400">No adjustments recorded yet.</p>
+        <div className="rounded-xl border border-slate-200 bg-white p-10 text-center shadow-sm">
+          <p className="text-sm text-slate-500">No adjustments recorded yet.</p>
         </div>
       ) : (
-        <div className="rounded-2xl border border-white/10 overflow-hidden">
+        <div className="rounded-xl border border-slate-200 overflow-hidden shadow-sm">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-white/10 bg-white/5 text-left">
-                <th className="px-4 py-3 text-xs uppercase tracking-wide text-gray-400">Candidate</th>
-                <th className="px-4 py-3 text-xs uppercase tracking-wide text-gray-400">Delta</th>
-                <th className="px-4 py-3 text-xs uppercase tracking-wide text-gray-400">Reason</th>
-                <th className="px-4 py-3 text-xs uppercase tracking-wide text-gray-400">By</th>
-                <th className="px-4 py-3 text-xs uppercase tracking-wide text-gray-400">Action</th>
+              <tr className="border-b border-slate-200 bg-slate-50 text-left">
+                <th className="px-4 py-3 text-xs uppercase tracking-wide text-slate-600 font-semibold">Candidate</th>
+                <th className="px-4 py-3 text-xs uppercase tracking-wide text-slate-600 font-semibold">Delta</th>
+                <th className="px-4 py-3 text-xs uppercase tracking-wide text-slate-600 font-semibold">Reason</th>
+                <th className="px-4 py-3 text-xs uppercase tracking-wide text-slate-600 font-semibold">By</th>
+                <th className="px-4 py-3 text-xs uppercase tracking-wide text-slate-600 font-semibold">Action</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/8">
+            <tbody className="divide-y divide-slate-100 bg-white">
               {adjustments.map((adj) => (
-                <tr key={adj.id} className="hover:bg-white/5 transition-colors">
+                <tr key={adj.id} className="hover:bg-sky-50/40 transition-colors">
                   <td className="px-4 py-3">
-                    <p className="font-medium text-white">{adj.candidates?.full_name ?? '—'}</p>
-                    <p className="text-xs text-gray-500">{adj.candidates?.positions?.title ?? ''}</p>
+                    <p className="font-medium text-slate-900">{adj.candidates?.full_name ?? '—'}</p>
+                    <p className="text-xs text-slate-500">{adj.candidates?.positions?.title ?? ''}</p>
                   </td>
                   <td className="px-4 py-3">
                     <Badge variant={adj.adjustment_votes >= 0 ? 'green' : 'red'}>
@@ -67,14 +67,14 @@ export function AdjustmentsClient({ positions, adjustments }: AdjustmentsClientP
                     </Badge>
                   </td>
                   <td className="px-4 py-3 max-w-xs">
-                    <p className="text-gray-300 text-xs line-clamp-2">{adj.reason}</p>
+                    <p className="text-slate-700 text-xs line-clamp-2">{adj.reason}</p>
                   </td>
-                  <td className="px-4 py-3 text-xs text-gray-400">{adj.authorized_by}</td>
+                  <td className="px-4 py-3 text-xs text-slate-600">{adj.authorized_by}</td>
                   <td className="px-4 py-3">
                     <button
                       onClick={() => handleDelete(adj.id)}
                       disabled={isPending}
-                      className="rounded-lg p-1.5 text-gray-500 hover:text-red-400 hover:bg-red-900/20 transition-colors"
+                      className="rounded-lg p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
                       aria-label="Delete adjustment"
                     >
                       <Trash2 className="h-4 w-4" />

@@ -243,22 +243,26 @@ export function VotersClient({
           <Input id="v-name" name="full_name" label="Full Name" placeholder="Surname Firstname Othername" required />
           <div className="grid grid-cols-2 gap-3">
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium text-gray-300" htmlFor="v-level">Level</label>
-              <select id="v-level" name="level" required className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-nabams-green">
+              <label className="text-sm font-semibold text-slate-800 block" htmlFor="v-level">Level</label>
+              <select id="v-level" name="level" required className="w-full px-3.5 py-2.5 bg-white border border-slate-300 text-slate-900 text-sm rounded-lg shadow-sm focus:outline-none focus:border-sky-600 focus:ring-2 focus:ring-sky-100 transition">
                 <option value="ND1">ND1</option>
                 <option value="HND1">HND1</option>
               </select>
             </div>
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium text-gray-300" htmlFor="v-prog">Programme</label>
-              <select id="v-prog" name="programme" className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-nabams-green">
+              <label className="text-sm font-semibold text-slate-800 block" htmlFor="v-prog">Programme</label>
+              <select id="v-prog" name="programme" className="w-full px-3.5 py-2.5 bg-white border border-slate-300 text-slate-900 text-sm rounded-lg shadow-sm focus:outline-none focus:border-sky-600 focus:ring-2 focus:ring-sky-100 transition">
                 <option value="Full Time">Full Time</option>
                 <option value="DPP">DPP</option>
               </select>
             </div>
           </div>
           <Input id="v-pin" name="voting_pin" label="Voting PIN" placeholder="Assign a unique PIN" required />
-          {addError && <p className="text-sm text-red-400">{addError}</p>}
+          {addError && (
+            <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-xs text-red-700">
+              {addError}
+            </div>
+          )}
           <div className="flex gap-3">
             <Button variant="outline" type="button" onClick={() => setAddModalOpen(false)} fullWidth>Cancel</Button>
             <Button type="submit" loading={addLoading} fullWidth>Add Voter</Button>

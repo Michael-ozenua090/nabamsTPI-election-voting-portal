@@ -7,6 +7,11 @@ import { Input } from '@/components/ui/Input';
 import { addAdjustment } from '@/app/actions/admin';
 import type { Candidate, Position } from '@/types/database';
 
+const SELECT_CLS =
+  'w-full px-3.5 py-2.5 bg-white border border-slate-300 text-slate-900 text-sm rounded-lg shadow-sm placeholder:text-slate-400 focus:outline-none focus:border-sky-600 focus:ring-2 focus:ring-sky-100 transition';
+
+const LABEL_CLS = 'text-sm font-semibold text-slate-800 block mb-1.5';
+
 interface AdjustmentModalProps {
   open: boolean;
   onClose: () => void;
@@ -66,7 +71,7 @@ export function AdjustmentModal({ open, onClose, positions }: AdjustmentModalPro
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Candidate selector */}
         <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-medium text-gray-300" htmlFor="adj-candidate">
+          <label className={LABEL_CLS} htmlFor="adj-candidate">
             Candidate
           </label>
           <select
@@ -74,7 +79,7 @@ export function AdjustmentModal({ open, onClose, positions }: AdjustmentModalPro
             value={candidateId}
             onChange={(e) => setCandidateId(e.target.value)}
             required
-            className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-nabams-green"
+            className={SELECT_CLS}
           >
             <option value="">— Select candidate —</option>
             {positions.map((pos) =>
@@ -100,7 +105,7 @@ export function AdjustmentModal({ open, onClose, positions }: AdjustmentModalPro
 
         {/* Reason */}
         <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-medium text-gray-300" htmlFor="adj-reason">
+          <label className={LABEL_CLS} htmlFor="adj-reason">
             Reason (mandatory)
           </label>
           <textarea
@@ -111,20 +116,20 @@ export function AdjustmentModal({ open, onClose, positions }: AdjustmentModalPro
             required
             minLength={10}
             placeholder="e.g. Electoral sanction for hall coercion — approved by HOD"
-            className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-nabams-green resize-none"
+            className="w-full px-3.5 py-2.5 bg-white border border-slate-300 text-slate-900 text-sm rounded-lg shadow-sm placeholder:text-slate-400 focus:outline-none focus:border-sky-600 focus:ring-2 focus:ring-sky-100 transition resize-none"
           />
         </div>
 
         {error && (
-          <p className="rounded-xl border border-red-700/50 bg-red-900/20 px-4 py-3 text-sm text-red-300">
+          <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-xs text-red-700">
             {error}
-          </p>
+          </div>
         )}
 
         {success && (
-          <p className="rounded-xl border border-green-700/50 bg-green-900/20 px-4 py-3 text-sm text-green-300">
+          <div className="rounded-lg border border-sky-200 bg-sky-50 px-4 py-3 text-xs text-sky-800">
             ✓ Adjustment recorded successfully.
-          </p>
+          </div>
         )}
 
         <div className="flex gap-3 pt-2">
