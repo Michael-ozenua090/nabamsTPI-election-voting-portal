@@ -20,8 +20,8 @@ export default async function AdjustmentsPage() {
 
   return (
     <div className="p-6 space-y-6 max-w-5xl mx-auto">
-      <h1 className="text-2xl font-bold text-white">Vote Adjustments</h1>
-      <p className="text-sm text-gray-400">
+      <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">Vote Adjustments</h1>
+      <p className="text-xs sm:text-sm text-slate-700 max-w-xl leading-relaxed">
         Raw student ballots are never modified. Adjustments (positive or negative) are applied
         additively when computing final tallies. All adjustments require a mandatory reason.
       </p>
