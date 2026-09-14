@@ -10,15 +10,19 @@ import {
 import type { Voter } from '@/types/database';
 
 // ─────────────────────────────────────────────────────────────────────
-// Validate matric number format: 13-digit numeric string
+// Validate matric number format: 6–25 alphanumeric characters
+// Covers 12-digit, 13-digit, and alphanumeric formats (e.g. F2503779)
 // No regex lookbehind — iOS 12 safe
 // ─────────────────────────────────────────────────────────────────────
 function isValidMatric(matric: string): boolean {
   const trimmed = matric.trim();
-  if (trimmed.length !== 13) return false;
+  if (trimmed.length < 6 || trimmed.length > 25) return false;
   for (let i = 0; i < trimmed.length; i++) {
     const code = trimmed.charCodeAt(i);
-    if (code < 48 || code > 57) return false; // '0'–'9'
+    const isDigit = code >= 48 && code <= 57;       // '0'–'9'
+    const isUpper = code >= 65 && code <= 90;       // 'A'–'Z'
+    const isLower = code >= 97 && code <= 122;      // 'a'–'z'
+    if (!isDigit && !isUpper && !isLower) return false;
   }
   return true;
 }
@@ -31,7 +35,7 @@ export async function checkVoterStatus(formData: FormData) {
   const matric = rawMatric.trim();
 
   if (!isValidMatric(matric)) {
-    return { error: 'Invalid matric number. Must be exactly 13 digits.' };
+    return { error: 'Invalid matriculation number. Please enter your official matric number as printed on your ID or admission slip.' };
   }
 
   const supabase = createAdminSupabaseClient();
@@ -45,9 +49,10 @@ export async function checkVoterStatus(formData: FormData) {
     return { error: 'Matric number not found on the accredited voter roll. Contact the NABAMS Electoral Committee.' };
   }
 
-  if (voter.level !== 'ND1' && voter.level !== 'HND1') {
+  const allowedLevels: string[] = ['ND1', 'ND2', 'HND1', 'HND2'];
+  if (!allowedLevels.includes(voter.level)) {
     return {
-      error: `Only ND1 and HND1 students are eligible to vote. Your level (${voter.level}) is not eligible.`,
+      error: `Your academic level (${voter.level}) is not accredited for this election.`,
     };
   }
 
@@ -86,7 +91,7 @@ export async function loginVoterWithPin(formData: FormData) {
   const pin = rawPin.trim();
 
   if (!isValidMatric(matric) || pin.length !== 4) {
-    return { error: 'Invalid matric number or PIN.' };
+    return { error: 'Invalid matriculation number or PIN.' };
   }
 
   const supabase = createAdminSupabaseClient();

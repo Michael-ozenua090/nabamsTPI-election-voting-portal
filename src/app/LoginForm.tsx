@@ -53,13 +53,11 @@ export function LoginForm() {
           id="matric_number"
           name="matric_number"
           type="text"
-          inputMode="numeric"
-          pattern="[0-9]{13}"
-          maxLength={13}
           placeholder="e.g. 2025231010270"
           required
           autoComplete="off"
           autoCorrect="off"
+          autoCapitalize="characters"
           spellCheck={false}
           readOnly={step === 2}
           className={[
@@ -72,7 +70,9 @@ export function LoginForm() {
           ].filter(Boolean).join(' ')}
         />
         {step === 1 && (
-          <p className="text-xs text-slate-400">13-digit number printed on your student ID card</p>
+          <p className="text-xs text-slate-500 mt-1">
+            Enter your official matriculation number as printed on your student ID or admission slip
+          </p>
         )}
       </div>
 

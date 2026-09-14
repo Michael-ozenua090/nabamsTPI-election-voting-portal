@@ -23,14 +23,14 @@ export default function HomePage() {
               </div>
               <div>
                 <h1 className="text-base font-bold text-slate-900 leading-tight">Voter Accreditation</h1>
-                <p className="text-xs text-slate-500 mt-0.5">ND1 &amp; HND1 Students Only</p>
+                <p className="text-xs text-slate-500 mt-0.5">Accredited Students Only &bull; ND &amp; HND</p>
               </div>
             </div>
             <LoginForm />
           </div>
 
           <p className="text-center text-xs text-slate-400">
-            Eligible voters: ND1 &amp; HND1 (Full Time &amp; DPP) only &nbsp;·&nbsp; Powered by NABAMS Electoral Committee
+            Eligible voters: Accredited Full-Time, DPP &amp; Part-Time Students (ND1, ND2, HND1, HND2) &nbsp;·&nbsp; Powered by NABAMS Electoral Committee
           </p>
         </div>
       </main>
