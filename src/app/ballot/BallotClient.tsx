@@ -5,13 +5,13 @@ import { useRouter } from 'next/navigation';
 import { PositionBlock } from '@/components/ballot/PositionBlock';
 import { BallotReviewModal } from '@/components/ballot/BallotReviewModal';
 import { castBallot } from '@/app/actions/ballot';
-import type { PositionWithCandidates } from '@/types/database';
+import type { PositionWithCandidates, VoterLevel } from '@/types/database';
 import { ChevronRight } from 'lucide-react';
 
 interface VoterInfo {
   full_name: string;
   matric_number: string;
-  level: 'ND1' | 'HND1';
+  level: VoterLevel;
   programme: string;
 }
 
