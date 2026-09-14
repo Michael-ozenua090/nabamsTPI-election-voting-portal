@@ -25,16 +25,21 @@ export interface Candidate {
   created_at: string;
 }
 
+export type VoterLevel = 'ND1' | 'ND2' | 'HND1' | 'HND2';
+export type VoterProgramme = 'Full Time' | 'DPP' | 'Part Time';
+
 export interface Voter {
   matric_number: string;
   full_name: string;
-  level: 'ND1' | 'HND1';
-  programme: 'Full Time' | 'DPP';
+  level: VoterLevel;
+  programme: VoterProgramme;
   passport_url: string | null;
   id_card_url: string | null;
   has_voted: boolean;
   voted_at: string | null;
   voting_pin: string | null;
+  email?: string | null;
+  phone_number?: string | null;
   created_at: string;
 }
 
@@ -72,7 +77,7 @@ export interface CastBallotResult {
 
 export interface VoterSessionPayload {
   matric_number: string;
-  level: 'ND1' | 'HND1';
+  level: VoterLevel;
   full_name: string;
 }
 

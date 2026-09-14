@@ -122,7 +122,9 @@ export function VotersClient({
         >
           <option value="All">All Levels</option>
           <option value="ND1">ND1</option>
+          <option value="ND2">ND2</option>
           <option value="HND1">HND1</option>
+          <option value="HND2">HND2</option>
         </select>
         
         <select
@@ -136,6 +138,7 @@ export function VotersClient({
           <option value="All">All Programmes</option>
           <option value="Full Time">Full Time</option>
           <option value="DPP">DPP</option>
+          <option value="Part Time">Part Time</option>
         </select>
         
         <select
@@ -246,7 +249,9 @@ export function VotersClient({
               <label className="text-sm font-semibold text-slate-800 block" htmlFor="v-level">Level</label>
               <select id="v-level" name="level" required className="w-full px-3.5 py-2.5 bg-white border border-slate-300 text-slate-900 text-sm rounded-lg shadow-sm focus:outline-none focus:border-sky-600 focus:ring-2 focus:ring-sky-100 transition">
                 <option value="ND1">ND1</option>
+                <option value="ND2">ND2</option>
                 <option value="HND1">HND1</option>
+                <option value="HND2">HND2</option>
               </select>
             </div>
             <div className="flex flex-col gap-1.5">
@@ -254,6 +259,7 @@ export function VotersClient({
               <select id="v-prog" name="programme" className="w-full px-3.5 py-2.5 bg-white border border-slate-300 text-slate-900 text-sm rounded-lg shadow-sm focus:outline-none focus:border-sky-600 focus:ring-2 focus:ring-sky-100 transition">
                 <option value="Full Time">Full Time</option>
                 <option value="DPP">DPP</option>
+                <option value="Part Time">Part Time</option>
               </select>
             </div>
           </div>
