@@ -1,6 +1,8 @@
 import './polyfills';
 import './globals.css';
 
+import { Analytics } from '@vercel/analytics/next';
+
 import type { Metadata, Viewport } from 'next';
 
 export const metadata: Metadata = {
@@ -36,7 +38,10 @@ export default function RootLayout({
         <link rel="icon" href="/nabams-logo.png" type="image/png" />
         <link rel="apple-touch-icon" href="/nabams-logo.png" />
       </head>
-      <body className="antialiased bg-slate-50">{children}</body>
+      <body className="antialiased bg-slate-50">
+        {children}
+        <Analytics />
+      </body>
     </html>
   );
 }
