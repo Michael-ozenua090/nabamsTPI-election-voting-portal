@@ -10,8 +10,9 @@ import { Modal } from '@/components/ui/Modal';
 import { PlusCircle, CheckCircle, XCircle, Search, ChevronLeft, ChevronRight, Eye } from 'lucide-react';
 import type { Voter } from '@/types/database';
 import Link from 'next/link';
+import { formatNigerianDateTime } from '@/lib/utils';
 
-type VoterRow = Pick<Voter, 'matric_number' | 'full_name' | 'level' | 'programme' | 'has_voted' | 'voted_at' | 'passport_url' | 'id_card_url'>;
+type VoterRow = Pick<Voter, 'matric_number' | 'full_name' | 'level' | 'programme' | 'has_voted' | 'voted_at' | 'passport_url' | 'id_card_url' | 'accredited_at'>;
 
 interface VotersClientProps {
   voters: VoterRow[];
@@ -193,7 +194,18 @@ export function VotersClient({
             {voters.map((v) => (
               <tr key={v.matric_number} className="hover:bg-sky-50/40 transition-colors border-b border-slate-100">
                 <td className="px-4 py-3 font-mono text-xs text-slate-600">{v.matric_number}</td>
-                <td className="px-4 py-3 font-medium text-slate-800">{v.full_name}</td>
+                <td className="px-4 py-3">
+                  <span className="font-medium text-slate-800 block">{v.full_name}</span>
+                  {v.accredited_at ? (
+                    <span className="block text-[11px] text-sky-700 font-medium mt-0.5">
+                      Accredited: {formatNigerianDateTime(v.accredited_at)}
+                    </span>
+                  ) : (
+                    <span className="block text-[11px] text-slate-400 mt-0.5">
+                      Not yet accredited
+                    </span>
+                  )}
+                </td>
                 <td className="px-4 py-3">
                   <Badge variant={v.level === 'ND1' ? 'green' : 'blue'}>{v.level}</Badge>
                 </td>

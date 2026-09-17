@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/Badge';
 import { ResetVoterButton } from './ResetVoterButton';
 import { User, CreditCard, ArrowLeft, CheckCircle, Clock } from 'lucide-react';
 import Link from 'next/link';
+import { formatNigerianDateTime } from '@/lib/utils';
 import { Button } from '@/components/ui/Button';
 import type { Metadata } from 'next';
 
@@ -78,15 +79,45 @@ export default async function VoterDetailPage({
               </div>
             </div>
 
+            {/* Date Added / Registered */}
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+                Date Added / Registered
+              </p>
+              <p className="text-sm font-medium text-gray-300 mt-1">
+                {formatNigerianDateTime(voter.created_at || voter.updated_at)}
+              </p>
+            </div>
+
+            {/* Accreditation Date */}
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+                Accreditation Completed
+              </p>
+              <p className="text-sm font-medium mt-1">
+                {voter.accredited_at ? (
+                  <span className="text-sky-400 font-semibold">
+                    {formatNigerianDateTime(voter.accredited_at)}
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                    Pending Accreditation
+                  </span>
+                )}
+              </p>
+            </div>
+
             {voter.has_voted && voter.voted_at && (
               <>
                 <div>
-                  <p className="text-xs text-gray-500 uppercase tracking-wide">Voted At</p>
-                  <p className="text-sm text-gray-300 font-medium mt-1">
-                    {new Date(voter.voted_at).toLocaleString()}
+                  <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+                    Ballot Cast At
+                  </p>
+                  <p className="text-sm font-semibold text-green-400 mt-1">
+                    {formatNigerianDateTime(voter.voted_at)}
                   </p>
                 </div>
-                <div className="col-span-2 pt-4 border-t border-white/5 flex items-center justify-between">
+                <div className="col-span-1 md:col-span-2 pt-4 border-t border-white/5 flex items-center justify-between">
                   <div>
                     <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Administrative Override</p>
                     <p className="text-xs text-gray-400 max-w-sm">
