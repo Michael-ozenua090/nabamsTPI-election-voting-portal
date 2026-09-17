@@ -41,6 +41,8 @@ export interface Voter {
   email?: string | null;
   phone_number?: string | null;
   created_at: string;
+  updated_at?: string | null;
+  accredited_at?: string | null;
 }
 
 export interface Vote {
