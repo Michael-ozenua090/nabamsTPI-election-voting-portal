@@ -23,6 +23,7 @@ export function getSecret(): Uint8Array {
 // ─── Cookie names ────────────────────────────────────────────────────
 export const VOTER_COOKIE = 'voter_session';
 export const ADMIN_COOKIE = 'admin_session';
+export const AGENT_COOKIE = 'agent_session';
 
 // ─── Cookie options ──────────────────────────────────────────────────
 const COOKIE_BASE = {
@@ -116,4 +117,46 @@ export async function setAdminSessionCookie(payload: AdminSessionPayload): Promi
 export async function clearAdminSessionCookie(): Promise<void> {
   const cookieStore = await cookies();
   cookieStore.delete(ADMIN_COOKIE);
+}
+
+// ─── Agent session ───────────────────────────────────────────────────
+
+export async function signAgentSession(): Promise<string> {
+  return new SignJWT({ role: 'agent' })
+    .setProtectedHeader({ alg: 'HS256' })
+    .setIssuedAt()
+    .setExpirationTime('8h')
+    .sign(getSecret());
+}
+
+export async function verifyAgentSession(
+  token: string
+): Promise<{ role: string } | null> {
+  try {
+    const { payload } = await jwtVerify(token, getSecret());
+    if (payload.role !== 'agent' && payload.role !== 'admin' && payload.role !== 'superadmin') return null;
+    return payload as unknown as { role: string };
+  } catch {
+    return null;
+  }
+}
+
+export async function getAgentSession(): Promise<{ role: string } | null> {
+  const cookieStore = await cookies();
+  const token = cookieStore.get(AGENT_COOKIE)?.value || cookieStore.get(ADMIN_COOKIE)?.value;
+  if (!token) return null;
+  return verifyAgentSession(token);
+}
+
+export async function setAgentSessionCookie(token: string): Promise<void> {
+  const cookieStore = await cookies();
+  cookieStore.set(AGENT_COOKIE, token, {
+    ...COOKIE_BASE,
+    maxAge: 8 * 60 * 60, // 8 hours
+  });
+}
+
+export async function clearAgentSessionCookie(): Promise<void> {
+  const cookieStore = await cookies();
+  cookieStore.delete(AGENT_COOKIE);
 }

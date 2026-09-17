@@ -67,9 +67,39 @@ export async function middleware(request: NextRequest) {
     }
   }
 
+  // 3. Handle /agent/login explicitly
+  if (pathname === '/agent/login') {
+    const agentToken = request.cookies.get('agent_session')?.value;
+    const valid = await isValidToken(agentToken);
+    
+    if (valid) {
+      return NextResponse.redirect(new URL('/agent', request.url));
+    }
+    
+    const response = NextResponse.next();
+    if (agentToken && !valid) {
+      response.cookies.delete('agent_session');
+    }
+    return response;
+  }
+
+  // 4. Protect all other /agent/* routes
+  if (pathname.startsWith('/agent')) {
+    const agentToken = request.cookies.get('agent_session')?.value;
+    const adminToken = request.cookies.get('admin_session')?.value;
+    const validAgent = await isValidToken(agentToken);
+    const validAdmin = await isValidToken(adminToken);
+
+    if (!validAgent && !validAdmin) {
+      const response = NextResponse.redirect(new URL('/agent/login', request.url));
+      if (agentToken) response.cookies.delete('agent_session');
+      return response;
+    }
+  }
+
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ['/admin/:path*', '/ballot/:path*', '/receipt/:path*'],
+  matcher: ['/admin/:path*', '/agent/:path*', '/ballot/:path*', '/receipt/:path*'],
 };
