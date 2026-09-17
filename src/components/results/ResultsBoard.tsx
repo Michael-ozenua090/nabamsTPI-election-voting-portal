@@ -1,22 +1,20 @@
 'use client';
 
-import { Crown } from 'lucide-react';
-import { Badge } from '@/components/ui/Badge';
+import Image from 'next/image';
+import { Crown, AlertCircle } from 'lucide-react';
 import type { ResultsRow } from '@/types/database';
 
 interface ResultsBoardProps {
   rows: ResultsRow[];
 }
 
-interface PositionGroup {
-  position_id: string;
-  position_title: string;
-  candidates: ResultsRow[];
-}
-
 export function ResultsBoard({ rows }: ResultsBoardProps) {
   // Group by position
-  const groups = rows.reduce<Record<string, PositionGroup>>((acc, row) => {
+  const groups = rows.reduce<Record<string, {
+    position_id: string;
+    position_title: string;
+    candidates: ResultsRow[];
+  }>>((acc, row) => {
     if (!acc[row.position_id]) {
       acc[row.position_id] = {
         position_id: row.position_id,
@@ -32,170 +30,181 @@ export function ResultsBoard({ rows }: ResultsBoardProps) {
     a.position_title.localeCompare(b.position_title)
   );
 
-  if (rows.length === 0) {
-    return (
-      <div className="rounded-2xl border border-white/10 bg-white/5 p-12 text-center">
-        <p className="text-gray-400">No results yet. Polls may not have started.</p>
-      </div>
-    );
-  }
-
   return (
-    <div className="space-y-8">
-      {sortedGroups.map((group) => {
-        const maxFinal = Math.max(...group.candidates.map((c) => c.final_tally), 0);
+    <div className="space-y-8 mt-6">
+      {/* Live Indicator Banner */}
+      <div className="flex items-center justify-between bg-sky-50/80 border border-sky-200 rounded-xl px-4 py-3">
+        <div className="flex items-center gap-2.5">
+          <span className="relative flex h-3 w-3">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-3 w-3 bg-sky-600"></span>
+          </span>
+          <p className="text-xs sm:text-sm font-semibold text-sky-950">
+            Live Election Results • Real-Time Ballot Tallying Active
+          </p>
+        </div>
+        <span className="text-xs font-medium text-sky-700 bg-white px-2.5 py-1 rounded-md border border-sky-200 shadow-sm">
+          Formula: Final = Raw + Adj
+        </span>
+      </div>
 
-        const sorted = [...group.candidates].sort(
-          (a, b) => b.final_tally - a.final_tally
-        );
+      {/* Grid of Position Result Cards */}
+      <div className="grid grid-cols-1 gap-8">
+        {sortedGroups.map((group) => {
+          const posCandidates = group.candidates;
 
-        return (
-          <section
-            key={group.position_id}
-            className="rounded-2xl border border-white/10 bg-white/3 overflow-hidden"
-          >
-            <div className="border-b border-white/10 bg-white/5 px-6 py-4">
-              <h3 className="text-base font-bold text-white">{group.position_title}</h3>
-            </div>
+          // Calculate total votes cast for this position
+          const totalPositionVotes = posCandidates.reduce((acc, c) => acc + Math.max(0, c.final_tally), 0);
 
-            <div className="divide-y divide-white/8">
-              {sorted.map((candidate, idx) => {
-                const isWinner = candidate.final_tally === maxFinal && maxFinal > 0;
-                const pct =
-                  maxFinal > 0
-                    ? Math.round((candidate.final_tally / maxFinal) * 100)
-                    : 0;
-                const totalForPosition = sorted.reduce(
-                  (s, c) => s + c.final_tally,
-                  0
-                );
-                const voteSharePct =
-                  totalForPosition > 0
-                    ? Math.round((candidate.final_tally / totalForPosition) * 100)
-                    : 0;
+          // Calculate final tallies and sort by highest vote count
+          const candidateResults = [...posCandidates]
+            .map((cand) => {
+              const percentage = totalPositionVotes > 0 
+                ? ((cand.final_tally / totalPositionVotes) * 100).toFixed(1) 
+                : '0.0';
 
-                return (
-                  <div
-                    key={candidate.candidate_id}
-                    className={[
-                      'px-6 py-4 transition-colors',
-                      isWinner && idx === 0 ? 'bg-yellow-900/10' : '',
-                    ].join(' ')}
-                  >
-                    <div className="flex items-center gap-4">
-                      {/* Rank */}
-                      <span
-                        className={[
-                          'flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-sm font-bold',
-                          isWinner && idx === 0
-                            ? 'bg-nabams-gold text-gray-900'
-                            : 'bg-white/10 text-gray-400',
-                        ].join(' ')}
+              return {
+                ...cand,
+                percentage: parseFloat(percentage),
+              };
+            })
+            .sort((a, b) => b.final_tally - a.final_tally);
+
+          // Determine leader (if any votes have been cast)
+          const highestVote = candidateResults[0]?.final_tally || 0;
+          const hasVotes = totalPositionVotes > 0;
+
+          return (
+            <div
+              key={group.position_id}
+              className="bg-white border border-slate-200/90 shadow-sm rounded-2xl overflow-hidden"
+            >
+              {/* Position Header */}
+              <div className="bg-gradient-to-r from-slate-50 via-white to-sky-50/30 px-6 py-4 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <h3 className="text-lg sm:text-xl font-extrabold text-slate-900 tracking-tight">
+                    {group.position_title}
+                  </h3>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    {posCandidates.length} candidate{posCandidates.length !== 1 ? 's' : ''} contesting
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold uppercase tracking-wider text-slate-700 bg-slate-100 px-3 py-1 rounded-full border border-slate-200">
+                    Total: {totalPositionVotes} votes
+                  </span>
+                </div>
+              </div>
+
+              {/* Candidates List within Position Card */}
+              <div className="p-6 space-y-6">
+                {candidateResults.length === 0 ? (
+                  <div className="py-8 text-center text-slate-400 text-sm italic">
+                    No candidates registered for this position.
+                  </div>
+                ) : (
+                  candidateResults.map((cand, idx) => {
+                    const isLeader = hasVotes && cand.final_tally === highestVote && cand.final_tally > 0;
+
+                    return (
+                      <div
+                        key={cand.candidate_id}
+                        className={`relative rounded-2xl p-4 sm:p-5 border transition ${
+                          isLeader
+                            ? 'bg-sky-50/40 border-sky-300 shadow-sm'
+                            : 'bg-white border-slate-200/80 hover:border-slate-300'
+                        }`}
                       >
-                        {idx + 1}
-                      </span>
-
-                      {/* Info */}
-                      <div className="min-w-0 flex-1">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <p className="font-semibold text-white truncate">
-                            {candidate.full_name}
-                          </p>
-                          {isWinner && idx === 0 && (
-                            <span className="flex items-center gap-1 text-xs text-nabams-gold font-medium">
-                              <Crown className="h-3.5 w-3.5" aria-hidden />
-                              Leading
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                          
+                          {/* Left: Large Photo + Name + Badge */}
+                          <div className="flex items-center gap-4 min-w-0">
+                            {/* Rank Number */}
+                            <span className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${
+                              isLeader ? 'bg-sky-600 text-white' : 'bg-slate-100 text-slate-600'
+                            }`}>
+                              {idx + 1}
                             </span>
-                          )}
-                        </div>
 
-                        {/* Progress bar */}
-                        <div className="mt-2 flex items-center gap-3">
-                          <div
-                            className="flex-1 h-2 rounded-full bg-white/10 overflow-hidden"
-                            role="progressbar"
-                            aria-valuenow={pct}
-                            aria-valuemin={0}
-                            aria-valuemax={100}
-                          >
-                            <div
-                              className={[
-                                'h-full rounded-full transition-[width] duration-700',
-                                isWinner && idx === 0
-                                  ? 'bg-nabams-gold'
-                                  : 'bg-nabams-green',
-                              ].join(' ')}
-                              style={{ width: `${pct}%` }}
-                            />
-                          </div>
-                          <span className="text-xs text-gray-400 tabular-nums w-10 text-right">
-                            {voteSharePct}%
-                          </span>
-                        </div>
-                      </div>
+                            {/* Prominent Large Candidate Portrait */}
+                            <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-2xl overflow-hidden border-2 border-slate-200 bg-slate-100 flex-shrink-0 shadow-sm">
+                              {cand.image_url ? (
+                                <Image
+                                  src={cand.image_url}
+                                  alt={cand.full_name}
+                                  fill
+                                  className="object-cover"
+                                />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center text-slate-400 font-bold text-xl">
+                                  {cand.full_name.charAt(0)}
+                                </div>
+                              )}
+                            </div>
 
-                      {/* Tally columns */}
-                      <div className="flex items-center gap-6 text-right text-sm flex-shrink-0">
-                        <div>
-                          <p className="text-xs text-gray-500 uppercase tracking-wide">Raw</p>
-                          <p className="font-semibold text-gray-200">{candidate.raw_votes}</p>
-                        </div>
-                        {candidate.adjustment_votes !== 0 && (
-                          <div>
-                            <p className="text-xs text-gray-500 uppercase tracking-wide">Adj</p>
-                            <p
-                              className={[
-                                'font-semibold',
-                                candidate.adjustment_votes > 0
-                                  ? 'text-green-400'
-                                  : 'text-red-400',
-                              ].join(' ')}
-                            >
-                              {candidate.adjustment_votes > 0 ? '+' : ''}
-                              {candidate.adjustment_votes}
-                            </p>
-                          </div>
-                        )}
-                        <div>
-                          <p className="text-xs text-gray-500 uppercase tracking-wide">Final</p>
-                          <p className="text-lg font-bold text-white">
-                            {candidate.final_tally}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Adjustment reasons */}
-                    {candidate.adjustments.length > 0 && (
-                      <div className="mt-3 space-y-1.5 pl-12">
-                        {candidate.adjustments.map((adj) => (
-                          <div
-                            key={adj.id}
-                            className="flex items-start gap-2 rounded-lg bg-white/5 px-3 py-2"
-                          >
-                            <Badge
-                              variant={adj.adjustment_votes >= 0 ? 'green' : 'red'}
-                            >
-                              {adj.adjustment_votes > 0 ? '+' : ''}
-                              {adj.adjustment_votes}
-                            </Badge>
+                            {/* Candidate Identity */}
                             <div className="min-w-0">
-                              <p className="text-xs text-gray-300">{adj.reason}</p>
-                              <p className="text-xs text-gray-500">
-                                by {adj.authorized_by}
-                              </p>
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <h4 className="text-base sm:text-lg font-bold text-slate-900 truncate">
+                                  {cand.full_name}
+                                </h4>
+                                
+                                {isLeader && (
+                                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-900 border border-amber-300 shadow-sm">
+                                    <Crown className="w-3.5 h-3.5 text-amber-700 fill-amber-500" />
+                                    Leading
+                                  </span>
+                                )}
+                              </div>
+
+                              {/* Audit Subtext */}
+                              <div className="flex items-center gap-3 text-xs text-slate-500 mt-1">
+                                <span>Raw: <strong className="text-slate-700">{cand.raw_votes}</strong></span>
+                                {cand.adjustment_votes !== 0 && (
+                                  <span className={cand.adjustment_votes > 0 ? 'text-emerald-700 font-medium' : 'text-red-600 font-medium'}>
+                                    Adj: {cand.adjustment_votes > 0 ? `+${cand.adjustment_votes}` : cand.adjustment_votes}
+                                  </span>
+                                )}
+                              </div>
                             </div>
                           </div>
-                        ))}
+
+                          {/* Right: Vote Tally & Percentage */}
+                          <div className="text-left sm:text-right flex-shrink-0">
+                            <p className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+                              {cand.final_tally}
+                              <span className="text-xs font-medium text-slate-400 ml-1">votes</span>
+                            </p>
+                            <p className="text-sm font-bold text-sky-700">
+                              {cand.percentage}%
+                            </p>
+                          </div>
+
+                        </div>
+
+                        {/* Animated Visual Progress Bar */}
+                        <div className="mt-4 pt-2">
+                          <div className="h-3.5 w-full bg-slate-100 rounded-full overflow-hidden p-0.5 border border-slate-200/60">
+                            <div
+                              className={`h-full rounded-full transition-all duration-700 ease-out ${
+                                isLeader
+                                  ? 'bg-gradient-to-r from-sky-500 to-sky-600 shadow-sm'
+                                  : 'bg-slate-300'
+                              }`}
+                              style={{ width: `${Math.max(cand.percentage, cand.final_tally > 0 ? 3 : 0)}%` }}
+                            />
+                          </div>
+                        </div>
+
                       </div>
-                    )}
-                  </div>
-                );
-              })}
+                    );
+                  })
+                )}
+              </div>
             </div>
-          </section>
-        );
-      })}
+          );
+        })}
+      </div>
     </div>
   );
 }
