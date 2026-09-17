@@ -392,6 +392,8 @@ export async function getPaginatedVoters({
     query = query.not('accredited_at', 'is', null);
   } else if (status === 'unaccredited') {
     query = query.is('accredited_at', null);
+  } else if (status === 'flagged') {
+    query = query.eq('is_flagged', true);
   }
 
   // Apply sorting
@@ -468,5 +470,59 @@ export async function clearTestData() {
   revalidatePath('/admin');
   revalidatePath('/admin/results');
   revalidatePath('/admin/voters');
+  return { success: true };
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// Flagging / Suspension
+// ─────────────────────────────────────────────────────────────────────
+export async function flagVoter(matricNumber: string, reason: string) {
+  await requireAdmin();
+  const sanitizedMatric = (matricNumber || '').trim().toUpperCase();
+  const sanitizedReason = (reason || '').trim();
+
+  if (!sanitizedReason) {
+    return { error: 'A mandatory reason for flagging is required.' };
+  }
+
+  const supabase = createAdminSupabaseClient();
+  const { error } = await supabase
+    .from('voters')
+    .update({
+      is_flagged: true,
+      flagged_reason: sanitizedReason,
+      flagged_at: new Date().toISOString(),
+      flagged_by: 'Electoral Admin',
+    })
+    .eq('matric_number', sanitizedMatric);
+
+  if (error) {
+    return { error: error.message };
+  }
+  revalidatePath('/admin/voters');
+  revalidatePath(`/admin/voters/${sanitizedMatric}`);
+  return { success: true };
+}
+
+export async function unflagVoter(matricNumber: string) {
+  await requireAdmin();
+  const sanitizedMatric = (matricNumber || '').trim().toUpperCase();
+  const supabase = createAdminSupabaseClient();
+
+  const { error } = await supabase
+    .from('voters')
+    .update({
+      is_flagged: false,
+      flagged_reason: null,
+      flagged_at: null,
+      flagged_by: null,
+    })
+    .eq('matric_number', sanitizedMatric);
+
+  if (error) {
+    return { error: error.message };
+  }
+  revalidatePath('/admin/voters');
+  revalidatePath(`/admin/voters/${sanitizedMatric}`);
   return { success: true };
 }

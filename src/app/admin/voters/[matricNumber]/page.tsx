@@ -2,7 +2,8 @@ import { notFound } from 'next/navigation';
 import { createAdminSupabaseClient } from '@/lib/supabase/server';
 import { Badge } from '@/components/ui/Badge';
 import { ResetVoterButton } from './ResetVoterButton';
-import { User, CreditCard, ArrowLeft, CheckCircle, Clock } from 'lucide-react';
+import { FlagVoterButton } from './FlagVoterButton';
+import { User, CreditCard, ArrowLeft, CheckCircle, Clock, AlertTriangle } from 'lucide-react';
 import Link from 'next/link';
 import { formatNigerianDateTime } from '@/lib/utils';
 import { Button } from '@/components/ui/Button';
@@ -37,6 +38,16 @@ export default async function VoterDetailPage({
         </Link>
         <h1 className="text-2xl font-bold text-white ml-auto">Voter Details</h1>
       </div>
+
+      {voter.is_flagged && (
+        <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 flex items-start gap-3">
+          <AlertTriangle className="h-5 w-5 text-red-400 shrink-0 mt-0.5" />
+          <div>
+            <h3 className="text-sm font-semibold text-red-400">This student account is FLAGGED.</h3>
+            <p className="text-sm text-red-300/80 mt-1">Reason: {voter.flagged_reason}</p>
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Main Details Card */}
@@ -128,6 +139,16 @@ export default async function VoterDetailPage({
                 </div>
               </>
             )}
+
+            <div className="col-span-1 md:col-span-2 pt-4 border-t border-white/5 flex items-center justify-between">
+              <div>
+                <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Account Suspension</p>
+                <p className="text-xs text-gray-400 max-w-sm">
+                  Flagging this account will suspend the student's voting rights immediately.
+                </p>
+              </div>
+              <FlagVoterButton matricNumber={voter.matric_number} isFlagged={!!voter.is_flagged} />
+            </div>
           </div>
         </div>
 

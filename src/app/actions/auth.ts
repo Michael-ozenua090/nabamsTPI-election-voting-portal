@@ -56,6 +56,15 @@ export async function checkVoterStatus(formData: FormData) {
     };
   }
 
+  if (voter.is_flagged) {
+    await setVoterSessionCookie({
+      matric_number: voter.matric_number,
+      level: voter.level,
+      full_name: voter.full_name,
+    });
+    redirect('/flagged');
+  }
+
   if (voter.has_voted) {
     await setVoterSessionCookie({
       matric_number: voter.matric_number,
@@ -107,12 +116,15 @@ export async function loginVoterWithPin(formData: FormData) {
     return { error: 'Incorrect voting PIN. Please try again.' };
   }
 
-  // Session should already be set by checkVoterStatus, but set it again to be safe
   await setVoterSessionCookie({
     matric_number: voter.matric_number,
     level: voter.level,
     full_name: voter.full_name,
   });
+
+  if (voter.is_flagged) {
+    redirect('/flagged');
+  }
 
   if (!voter.passport_url || !voter.id_card_url) {
     redirect('/accreditation');

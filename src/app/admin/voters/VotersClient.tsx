@@ -12,7 +12,7 @@ import type { Voter } from '@/types/database';
 import Link from 'next/link';
 import { formatNigerianDateTime } from '@/lib/utils';
 
-type VoterRow = Pick<Voter, 'matric_number' | 'full_name' | 'level' | 'programme' | 'has_voted' | 'voted_at' | 'passport_url' | 'id_card_url' | 'accredited_at'>;
+type VoterRow = Pick<Voter, 'matric_number' | 'full_name' | 'level' | 'programme' | 'has_voted' | 'voted_at' | 'passport_url' | 'id_card_url' | 'accredited_at' | 'is_flagged'>;
 
 interface VotersClientProps {
   voters: VoterRow[];
@@ -158,6 +158,7 @@ export function VotersClient({
           <option value="unaccredited">Unaccredited (Pending)</option>
           <option value="voted">Voted</option>
           <option value="not_voted">Not Voted</option>
+          <option value="flagged">Flagged / Suspended</option>
         </select>
 
         <select
@@ -196,7 +197,13 @@ export function VotersClient({
                 <td className="px-4 py-3 font-mono text-xs text-slate-600">{v.matric_number}</td>
                 <td className="px-4 py-3">
                   <span className="font-medium text-slate-800 block">{v.full_name}</span>
-                  {v.accredited_at ? (
+                  {v.is_flagged ? (
+                    <span className="block mt-1">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-red-100 text-red-800 border border-red-200">
+                        Flagged
+                      </span>
+                    </span>
+                  ) : v.accredited_at ? (
                     <span className="block text-[11px] text-sky-700 font-medium mt-0.5">
                       Accredited: {formatNigerianDateTime(v.accredited_at)}
                     </span>

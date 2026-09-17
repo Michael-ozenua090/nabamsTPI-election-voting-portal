@@ -43,6 +43,10 @@ export interface Voter {
   created_at: string;
   updated_at?: string | null;
   accredited_at?: string | null;
+  is_flagged?: boolean;
+  flagged_reason?: string | null;
+  flagged_at?: string | null;
+  flagged_by?: string | null;
 }
 
 export interface Vote {

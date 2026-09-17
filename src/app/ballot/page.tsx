@@ -57,10 +57,11 @@ export default async function BallotPage() {
   // Check voter hasn't already voted
   const { data: voter } = await supabase
     .from('voters')
-    .select('has_voted, full_name, level, programme, passport_url, id_card_url')
+    .select('has_voted, is_flagged, full_name, level, programme, passport_url, id_card_url')
     .eq('matric_number', session.matric_number)
     .single();
 
+  if (voter?.is_flagged) redirect('/flagged');
   if (voter?.has_voted) redirect('/already-voted');
   if (!voter?.passport_url || !voter?.id_card_url) redirect('/accreditation');
 
