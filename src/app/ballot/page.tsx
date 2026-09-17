@@ -68,13 +68,13 @@ export default async function BallotPage() {
   // Fetch positions + candidates (ordered)
   const { data: positions } = await supabase
     .from('positions')
-    .select('*, candidates(id, full_name, image_url, position_id, created_at)')
+    .select('*, candidates(id, full_name, image_url, position_id, created_at, is_disqualified)')
     .order('display_order', { ascending: true });
 
   const positionsWithCandidates: PositionWithCandidates[] = (positions ?? []).map(
     (p) => ({
       ...p,
-      candidates: (p.candidates ?? []) as PositionWithCandidates['candidates'],
+      candidates: ((p.candidates ?? []) as PositionWithCandidates['candidates']).filter(c => c.is_disqualified !== true),
     })
   );
 

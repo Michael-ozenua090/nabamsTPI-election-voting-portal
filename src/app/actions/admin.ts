@@ -469,12 +469,113 @@ export async function clearTestData() {
 
   revalidatePath('/admin');
   revalidatePath('/admin/results');
-  revalidatePath('/admin/voters');
+  revalidatePath('/admin/candidates');
+  revalidatePath('/ballot'); // Add this to invalidate ballot path since candidates update
   return { success: true };
 }
 
 // ─────────────────────────────────────────────────────────────────────
-// Flagging / Suspension
+// Candidate Management Overhaul
+// ─────────────────────────────────────────────────────────────────────
+
+// 1. Update Candidate
+export async function updateCandidate(formData: FormData) {
+  await requireAdmin();
+  const id = formData.get('id') as string;
+  const fullName = (formData.get('full_name') as string || '').trim();
+  const positionId = formData.get('position_id') as string;
+  const photo = formData.get('photo') as File | null;
+
+  if (!id || !fullName || !positionId) {
+    return { error: 'Please provide candidate name and position.' };
+  }
+
+  const supabase = createAdminSupabaseClient();
+  let imageUrl: string | undefined = undefined;
+
+  // Upload new photo if provided
+  if (photo && photo.size > 0) {
+    const ext = photo.name.split('.').pop() || 'jpg';
+    const filePath = `candidates/${id}-${Date.now()}.${ext}`;
+    const arrayBuffer = await photo.arrayBuffer();
+
+    const { error: uploadErr } = await supabase.storage
+      .from('voter-documents')
+      .upload(filePath, Buffer.from(arrayBuffer), {
+        contentType: photo.type,
+        upsert: true,
+      });
+
+    if (!uploadErr) {
+      const { data } = supabase.storage
+        .from('voter-documents')
+        .getPublicUrl(filePath);
+      imageUrl = data.publicUrl;
+    }
+  }
+
+  const updateData: any = {
+    full_name: fullName,
+    position_id: positionId,
+  };
+  if (imageUrl) updateData.image_url = imageUrl;
+
+  const { error } = await supabase
+    .from('candidates')
+    .update(updateData)
+    .eq('id', id);
+
+  if (error) return { error: error.message };
+  revalidatePath('/admin/candidates');
+  revalidatePath('/ballot');
+  return { success: true };
+}
+
+// 2. Disqualify Candidate
+export async function disqualifyCandidate(candidateId: string, reason: string) {
+  await requireAdmin();
+  const sanitizedReason = (reason || '').trim();
+  if (!sanitizedReason) {
+    return { error: 'A mandatory reason for disqualification is required.' };
+  }
+
+  const supabase = createAdminSupabaseClient();
+  const { error } = await supabase
+    .from('candidates')
+    .update({
+      is_disqualified: true,
+      disqualification_reason: sanitizedReason,
+      disqualified_at: new Date().toISOString(),
+    })
+    .eq('id', candidateId);
+
+  if (error) return { error: error.message };
+  revalidatePath('/admin/candidates');
+  revalidatePath('/ballot');
+  return { success: true };
+}
+
+// 3. Reinstate Candidate
+export async function reinstateCandidate(candidateId: string) {
+  await requireAdmin();
+  const supabase = createAdminSupabaseClient();
+  const { error } = await supabase
+    .from('candidates')
+    .update({
+      is_disqualified: false,
+      disqualification_reason: null,
+      disqualified_at: null,
+    })
+    .eq('id', candidateId);
+
+  if (error) return { error: error.message };
+  revalidatePath('/admin/candidates');
+  revalidatePath('/ballot');
+  return { success: true };
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// Add Voter
 // ─────────────────────────────────────────────────────────────────────
 export async function flagVoter(matricNumber: string, reason: string) {
   await requireAdmin();

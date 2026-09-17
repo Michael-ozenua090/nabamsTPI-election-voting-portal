@@ -23,6 +23,9 @@ export interface Candidate {
   full_name: string;
   image_url: string;
   created_at: string;
+  is_disqualified?: boolean;
+  disqualification_reason?: string | null;
+  disqualified_at?: string | null;
 }
 
 export type VoterLevel = 'ND1' | 'ND2' | 'HND1' | 'HND2';
