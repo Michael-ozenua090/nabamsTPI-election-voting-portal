@@ -44,7 +44,7 @@ export function VotersClient({
   const [level, setLevel] = useState(initialLevel);
   const [programme, setProgramme] = useState(initialProgramme);
   const [status, setStatus] = useState(initialStatus);
-  const [sort, setSort] = useState(initialSort || 'updated_desc');
+  const [sort, setSort] = useState(initialSort || 'accredited_desc');
   
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -153,8 +153,10 @@ export function VotersClient({
           className="rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-sky-100 focus:border-sky-500 transition duration-150"
         >
           <option value="All">All Statuses</option>
-          <option value="Voted">Voted</option>
-          <option value="Pending">Pending</option>
+          <option value="accredited">Accredited (Docs Uploaded)</option>
+          <option value="unaccredited">Unaccredited (Pending)</option>
+          <option value="voted">Voted</option>
+          <option value="not_voted">Not Voted</option>
         </select>
 
         <select
@@ -165,7 +167,7 @@ export function VotersClient({
           }}
           className="rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-sky-100 focus:border-sky-500 transition duration-150"
         >
-          <option value="updated_desc">Recently Registered</option>
+          <option value="accredited_desc">Recently Accredited (Top)</option>
           <option value="name_asc">Name (A – Z)</option>
           <option value="name_desc">Name (Z – A)</option>
           <option value="matric_asc">Matric (Ascending)</option>

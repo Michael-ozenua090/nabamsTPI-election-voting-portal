@@ -201,6 +201,7 @@ export async function completeAccreditation(formData: FormData) {
       email: email,
       voting_pin: pin,
       updated_at: new Date().toISOString(), // Record the exact accreditation timestamp
+      accredited_at: new Date().toISOString(), // Marks the exact accreditation completion timestamp
     })
     .eq('matric_number', matric);
 

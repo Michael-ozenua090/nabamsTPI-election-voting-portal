@@ -353,7 +353,7 @@ export async function getPaginatedVoters({
   level = '',
   programme = '',
   status = '',
-  sort = 'updated_desc', // Default: most recently registered/updated at top
+  sort = 'accredited_desc', // Default to Recently Accredited
 }: {
   page?: number;
   pageSize?: number;
@@ -384,10 +384,14 @@ export async function getPaginatedVoters({
     query = query.eq('programme', programme);
   }
 
-  if (status === 'Voted') {
+  if (status === 'Voted' || status === 'voted') {
     query = query.eq('has_voted', true);
-  } else if (status === 'Pending') {
+  } else if (status === 'Pending' || status === 'not_voted') {
     query = query.eq('has_voted', false);
+  } else if (status === 'accredited') {
+    query = query.not('accredited_at', 'is', null);
+  } else if (status === 'unaccredited') {
+    query = query.is('accredited_at', null);
   }
 
   // Apply sorting
@@ -407,10 +411,13 @@ export async function getPaginatedVoters({
     case 'voted_desc':
       query = query.order('voted_at', { ascending: false, nullsFirst: false });
       break;
+    case 'accredited_desc':
     case 'updated_desc':
     default:
-      // Primary default: most recently accredited/updated students at the top
-      query = query.order('updated_at', { ascending: false, nullsFirst: false });
+      // Puts newly accredited students at the top; unaccredited nulls pushed to the bottom
+      query = query
+        .order('accredited_at', { ascending: false, nullsFirst: false })
+        .order('full_name', { ascending: true });
       break;
   }
 

@@ -15,7 +15,7 @@ export default async function VotersPage({
   const level = typeof searchParams.level === 'string' ? searchParams.level : '';
   const programme = typeof searchParams.programme === 'string' ? searchParams.programme : '';
   const status = typeof searchParams.status === 'string' ? searchParams.status : '';
-  const sort = typeof searchParams.sort === 'string' ? searchParams.sort : 'updated_desc';
+  const sort = typeof searchParams.sort === 'string' ? searchParams.sort : 'accredited_desc';
 
   const { voters, total, totalPages, currentPage } = await getPaginatedVoters({
     page: isNaN(page) || page < 1 ? 1 : page,
