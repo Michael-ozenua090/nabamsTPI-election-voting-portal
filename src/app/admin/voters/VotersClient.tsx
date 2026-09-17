@@ -22,6 +22,7 @@ interface VotersClientProps {
   initialLevel: string;
   initialProgramme: string;
   initialStatus: string;
+  initialSort: string;
 }
 
 export function VotersClient({
@@ -33,6 +34,7 @@ export function VotersClient({
   initialLevel,
   initialProgramme,
   initialStatus,
+  initialSort,
 }: VotersClientProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -42,6 +44,7 @@ export function VotersClient({
   const [level, setLevel] = useState(initialLevel);
   const [programme, setProgramme] = useState(initialProgramme);
   const [status, setStatus] = useState(initialStatus);
+  const [sort, setSort] = useState(initialSort || 'updated_desc');
   
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -152,6 +155,22 @@ export function VotersClient({
           <option value="All">All Statuses</option>
           <option value="Voted">Voted</option>
           <option value="Pending">Pending</option>
+        </select>
+
+        <select
+          value={sort}
+          onChange={(e) => {
+            setSort(e.target.value);
+            updateFilters({ sort: e.target.value, page: '1' });
+          }}
+          className="rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-sky-100 focus:border-sky-500 transition duration-150"
+        >
+          <option value="updated_desc">Recently Registered</option>
+          <option value="name_asc">Name (A – Z)</option>
+          <option value="name_desc">Name (Z – A)</option>
+          <option value="matric_asc">Matric (Ascending)</option>
+          <option value="matric_desc">Matric (Descending)</option>
+          <option value="voted_desc">Recently Voted</option>
         </select>
 
         <Button size="sm" onClick={() => setAddModalOpen(true)}>

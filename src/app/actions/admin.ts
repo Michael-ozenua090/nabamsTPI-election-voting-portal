@@ -353,6 +353,7 @@ export async function getPaginatedVoters({
   level = '',
   programme = '',
   status = '',
+  sort = 'updated_desc', // Default: most recently registered/updated at top
 }: {
   page?: number;
   pageSize?: number;
@@ -360,6 +361,7 @@ export async function getPaginatedVoters({
   level?: string;
   programme?: string;
   status?: string;
+  sort?: string;
 }) {
   await requireAdmin();
   const supabase = createAdminSupabaseClient();
@@ -388,9 +390,31 @@ export async function getPaginatedVoters({
     query = query.eq('has_voted', false);
   }
 
-  const { data, count, error } = await query
-    .order('created_at', { ascending: false })
-    .range(from, to);
+  // Apply sorting
+  switch (sort) {
+    case 'name_asc':
+      query = query.order('full_name', { ascending: true });
+      break;
+    case 'name_desc':
+      query = query.order('full_name', { ascending: false });
+      break;
+    case 'matric_asc':
+      query = query.order('matric_number', { ascending: true });
+      break;
+    case 'matric_desc':
+      query = query.order('matric_number', { ascending: false });
+      break;
+    case 'voted_desc':
+      query = query.order('voted_at', { ascending: false, nullsFirst: false });
+      break;
+    case 'updated_desc':
+    default:
+      // Primary default: most recently accredited/updated students at the top
+      query = query.order('updated_at', { ascending: false, nullsFirst: false });
+      break;
+  }
+
+  const { data, count, error } = await query.range(from, to);
 
   if (error) {
     console.error('[getPaginatedVoters Error]:', error);
