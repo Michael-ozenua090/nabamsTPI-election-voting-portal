@@ -264,30 +264,55 @@ export async function addCandidate(formData: FormData) {
   return { success: true };
 }
 
-export async function updateCandidate(id: string, formData: FormData) {
+export async function updateCandidate(
+  idOrFormData: string | FormData,
+  maybeFormData?: FormData
+) {
   await requireAdmin();
   const supabase = createAdminSupabaseClient();
+
+  const id = typeof idOrFormData === 'string' ? idOrFormData : (idOrFormData.get('id') as string);
+  const formData = typeof idOrFormData === 'string' ? maybeFormData! : idOrFormData;
+
+  if (!id) {
+    return { error: 'Candidate ID is required.' };
+  }
 
   const fullName = (formData.get('full_name') as string)?.trim();
   const positionId = formData.get('position_id') as string;
   const photoFile = formData.get('photo') as File | null;
 
-  const updates: Record<string, string> = {};
+  const updates: Record<string, any> = {};
   if (fullName) updates.full_name = fullName;
   if (positionId) updates.position_id = positionId;
 
+  // Handle Photo upload if provided
   if (photoFile && photoFile.size > 0) {
-    const path = `candidates/${id}-${Date.now()}.jpg`;
+    const ext = photoFile.name.split('.').pop() || 'jpg';
+    const path = `candidates/${id}-${Date.now()}.${ext}`;
+
     const { error: uploadErr } = await supabase.storage
       .from('voter-documents')
       .upload(path, photoFile, { upsert: true, contentType: photoFile.type });
-    if (uploadErr) return { error: `Photo upload failed: ${uploadErr.message}` };
-    const { data: urlData } = supabase.storage.from('voter-documents').getPublicUrl(path);
+
+    if (uploadErr) {
+      return { error: `Photo upload failed: ${uploadErr.message}` };
+    }
+
+    const { data: urlData } = supabase.storage
+      .from('voter-documents')
+      .getPublicUrl(path);
+
     updates.image_url = urlData.publicUrl;
   }
 
-  const { error } = await supabase.from('candidates').update(updates).eq('id', id);
+  const { error } = await supabase
+    .from('candidates')
+    .update(updates)
+    .eq('id', id);
+
   if (error) return { error: error.message };
+
   revalidatePath('/admin/candidates');
   revalidatePath('/ballot');
   return { success: true };
@@ -478,58 +503,7 @@ export async function clearTestData() {
 // Candidate Management Overhaul
 // ─────────────────────────────────────────────────────────────────────
 
-// 1. Update Candidate
-export async function updateCandidate(formData: FormData) {
-  await requireAdmin();
-  const id = formData.get('id') as string;
-  const fullName = (formData.get('full_name') as string || '').trim();
-  const positionId = formData.get('position_id') as string;
-  const photo = formData.get('photo') as File | null;
 
-  if (!id || !fullName || !positionId) {
-    return { error: 'Please provide candidate name and position.' };
-  }
-
-  const supabase = createAdminSupabaseClient();
-  let imageUrl: string | undefined = undefined;
-
-  // Upload new photo if provided
-  if (photo && photo.size > 0) {
-    const ext = photo.name.split('.').pop() || 'jpg';
-    const filePath = `candidates/${id}-${Date.now()}.${ext}`;
-    const arrayBuffer = await photo.arrayBuffer();
-
-    const { error: uploadErr } = await supabase.storage
-      .from('voter-documents')
-      .upload(filePath, Buffer.from(arrayBuffer), {
-        contentType: photo.type,
-        upsert: true,
-      });
-
-    if (!uploadErr) {
-      const { data } = supabase.storage
-        .from('voter-documents')
-        .getPublicUrl(filePath);
-      imageUrl = data.publicUrl;
-    }
-  }
-
-  const updateData: any = {
-    full_name: fullName,
-    position_id: positionId,
-  };
-  if (imageUrl) updateData.image_url = imageUrl;
-
-  const { error } = await supabase
-    .from('candidates')
-    .update(updateData)
-    .eq('id', id);
-
-  if (error) return { error: error.message };
-  revalidatePath('/admin/candidates');
-  revalidatePath('/ballot');
-  return { success: true };
-}
 
 // 2. Disqualify Candidate
 export async function disqualifyCandidate(candidateId: string, reason: string) {
