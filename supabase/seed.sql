@@ -3,7 +3,7 @@
 
 INSERT INTO positions (id, title, display_order) VALUES
   (gen_random_uuid(), 'President',             1),
-  (gen_random_uuid(), 'Vice President',        2),
+  (gen_random_uuid(), 'Chief Librarian 1',     2),
   (gen_random_uuid(), 'General Secretary',     3),
   (gen_random_uuid(), 'Financial Secretary',   4),
   (gen_random_uuid(), 'Treasurer',             5),
