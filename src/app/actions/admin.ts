@@ -94,8 +94,47 @@ export async function setElectionStatus(status: ElectionStatus) {
     .eq('id', 1);
   if (error) return { error: error.message };
   revalidatePath('/admin');
-  revalidatePath('/ballot');
+  revalidatePath('/');
   return { success: true };
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// Accreditation Lock Control
+// ─────────────────────────────────────────────────────────────────────
+
+// 1. Get Accreditation Lock Status
+export async function getAccreditationStatus(): Promise<boolean> {
+  const supabase = createAdminSupabaseClient();
+  const { data } = await supabase
+    .from('election_config')
+    .select('value')
+    .eq('key', 'accreditation_locked')
+    .maybeSingle();
+
+  return data?.value === 'true';
+}
+
+// 2. Toggle Accreditation Lock
+export async function toggleAccreditationLock(shouldLock: boolean) {
+  await requireAdmin();
+  const supabase = createAdminSupabaseClient();
+
+  const { error } = await supabase
+    .from('election_config')
+    .upsert({
+      key: 'accreditation_locked',
+      value: shouldLock ? 'true' : 'false',
+      updated_at: new Date().toISOString(),
+    });
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  revalidatePath('/admin');
+  revalidatePath('/');
+  revalidatePath('/accreditation');
+  return { success: true, isLocked: shouldLock };
 }
 
 // ─────────────────────────────────────────────────────────────────────

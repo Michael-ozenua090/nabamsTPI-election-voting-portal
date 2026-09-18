@@ -10,6 +10,10 @@ export default async function AdminDashboardPage() {
   const session = await getAdminSession();
   const supabase = createAdminSupabaseClient();
   const { data: config } = await supabase.from('election_config').select('status').eq('id', 1).single();
+  
+  const { getAccreditationStatus } = await import('@/app/actions/admin');
+  const isAccreditationLocked = await getAccreditationStatus();
+
   const { count: totalVoters } = await supabase.from('voters').select('*', { count: 'exact', head: true });
   const { count: votedCount } = await supabase.from('voters').select('*', { count: 'exact', head: true }).eq('has_voted', true);
   const turnout = totalVoters && votedCount ? Math.round((votedCount / totalVoters) * 100) : 0;
@@ -45,7 +49,7 @@ export default async function AdminDashboardPage() {
         </p>
       </div>
 
-      <ElectionControlPanel currentStatus={(config?.status as string) ?? 'pending'} />
+      <ElectionControlPanel currentStatus={(config?.status as string) ?? 'pending'} isAccreditationLocked={isAccreditationLocked} />
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {stats.map(({ label, value, subtext, icon: Icon }) => (

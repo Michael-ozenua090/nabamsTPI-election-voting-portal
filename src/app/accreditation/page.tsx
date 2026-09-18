@@ -13,6 +13,12 @@ export default async function AccreditationPage() {
   const session = await getVoterSession();
   if (!session) redirect('/');
 
+  const { getAccreditationStatus } = await import('@/app/actions/admin');
+  const isLocked = await getAccreditationStatus();
+  if (isLocked) {
+    redirect('/?error=Accreditation has officially closed by order of the Electoral Committee.');
+  }
+
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
       <InstitutionalHeader />

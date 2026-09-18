@@ -82,6 +82,21 @@ export async function checkVoterStatus(formData: FormData) {
   });
 
   if (!voter.voting_pin) {
+    // Check if accreditation is locked in election_config
+    const { data: configRow } = await supabase
+      .from('election_config')
+      .select('value')
+      .eq('key', 'accreditation_locked')
+      .maybeSingle();
+
+    const isAccreditationLocked = configRow?.value === 'true';
+
+    if (isAccreditationLocked) {
+      return {
+        error: 'Accreditation has officially closed by order of the Electoral Committee. Students who did not complete accreditation during the registration window are ineligible to vote.',
+      };
+    }
+
     // First time accreditation
     redirect('/accreditation');
   }
