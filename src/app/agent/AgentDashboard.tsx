@@ -200,39 +200,38 @@ export default function AgentDashboard({ initialData }: { initialData: AgentData
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                           
                           {/* Info */}
-                          <div className="flex items-center gap-5 min-w-0">
+                          <div className="flex items-center gap-3 sm:gap-4 min-w-0">
                             {/* Rank */}
-                            <span className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 ${
-                              isLeader ? 'bg-sky-600 text-white shadow-sm' : 'bg-slate-100 text-slate-600'
+                            <span className={`w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${
+                              isLeader ? 'bg-sky-600 text-white shadow-sm' : 'bg-slate-100 text-slate-700'
                             }`}>
                               {idx + 1}
                             </span>
 
                             {/* Image */}
-                            <div className="relative w-18 h-18 sm:w-[72px] sm:h-[72px] flex-shrink-0 bg-slate-100 rounded-2xl border-2 border-slate-200 overflow-hidden shadow-sm">
+                            <div className="relative w-14 h-14 sm:w-20 sm:h-20 flex-shrink-0 bg-slate-100 rounded-xl sm:rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
                               {cand.image_url ? (
-                                <Image src={cand.image_url} alt={cand.full_name} fill className="object-cover" />
+                                <img src={cand.image_url} alt={cand.full_name} className="w-full h-full object-cover" />
                               ) : (
-                                <div className="w-full h-full flex items-center justify-center text-2xl font-bold text-slate-400">
+                                <div className="w-full h-full flex items-center justify-center text-lg font-bold text-slate-400">
                                   {cand.full_name.charAt(0)}
                                 </div>
                               )}
                             </div>
 
                             {/* Name & Badge */}
-                            <div className="min-w-0">
-                              <h3 className="text-lg font-bold text-slate-900 truncate">
-                                {cand.full_name}
-                              </h3>
-                              <div className="flex gap-2 mt-1">
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                                <h4 className="text-sm sm:text-base md:text-lg font-bold text-slate-900 leading-tight break-words">
+                                  {cand.full_name}
+                                </h4>
                                 {isLeader && (
-                                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-900 border border-amber-300 shadow-sm">
-                                    <Crown className="w-3.5 h-3.5 text-amber-600 fill-amber-500" />
-                                    Leading
+                                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-bold bg-amber-100 text-amber-900 border border-amber-300">
+                                    👑 Leading
                                   </span>
                                 )}
                                 {cand.is_disqualified && (
-                                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-800 border border-red-200">
+                                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-bold bg-red-100 text-red-800 border border-red-200">
                                     Disqualified
                                   </span>
                                 )}

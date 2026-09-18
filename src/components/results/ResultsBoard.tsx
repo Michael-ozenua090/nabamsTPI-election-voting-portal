@@ -118,41 +118,39 @@ export function ResultsBoard({ rows }: ResultsBoardProps) {
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                           
                           {/* Left: Large Photo + Name + Badge */}
-                          <div className="flex items-center gap-4 min-w-0">
+                          <div className="flex items-center gap-3 sm:gap-4 min-w-0">
                             {/* Rank Number */}
-                            <span className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${
-                              isLeader ? 'bg-sky-600 text-white' : 'bg-slate-100 text-slate-600'
+                            <span className={`w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${
+                              isLeader ? 'bg-sky-600 text-white' : 'bg-slate-100 text-slate-700'
                             }`}>
                               {idx + 1}
                             </span>
 
-                            {/* Prominent Large Candidate Portrait */}
-                            <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-2xl overflow-hidden border-2 border-slate-200 bg-slate-100 flex-shrink-0 shadow-sm">
+                            {/* PROMINENT CANDIDATE PORTRAIT (ALWAYS VISIBLE ON ALL SCREENS) */}
+                            <div className="relative w-14 h-14 sm:w-20 sm:h-20 rounded-xl sm:rounded-2xl overflow-hidden border border-slate-200 bg-slate-100 flex-shrink-0 shadow-sm">
                               {cand.image_url ? (
-                                <Image
+                                <img
                                   src={cand.image_url}
                                   alt={cand.full_name}
-                                  fill
-                                  className="object-cover"
+                                  className="w-full h-full object-cover"
                                 />
                               ) : (
-                                <div className="w-full h-full flex items-center justify-center text-slate-400 font-bold text-xl">
+                                <div className="w-full h-full flex items-center justify-center text-slate-400 font-bold text-lg">
                                   {cand.full_name.charAt(0)}
                                 </div>
                               )}
                             </div>
 
-                            {/* Candidate Identity */}
-                            <div className="min-w-0">
-                              <div className="flex items-center gap-2 flex-wrap">
-                                <h4 className="text-base sm:text-lg font-bold text-slate-900 truncate">
+                            {/* Candidate Name & Info */}
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                                <h4 className="text-sm sm:text-base md:text-lg font-bold text-slate-900 leading-tight break-words">
                                   {cand.full_name}
                                 </h4>
                                 
                                 {isLeader && (
-                                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-900 border border-amber-300 shadow-sm">
-                                    <Crown className="w-3.5 h-3.5 text-amber-700 fill-amber-500" />
-                                    Leading
+                                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-bold bg-amber-100 text-amber-900 border border-amber-300">
+                                    👑 Leading
                                   </span>
                                 )}
                               </div>
