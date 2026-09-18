@@ -81,23 +81,23 @@ export async function checkVoterStatus(formData: FormData) {
     full_name: voter.full_name,
   });
 
-  if (!voter.voting_pin) {
-    // Check if accreditation is locked in election_config
+  if (!voter.voting_pin || !voter.accredited_at) {
+    // 1. Fetch current accreditation status
     const { data: configRow } = await supabase
       .from('election_config')
-      .select('value')
-      .eq('key', 'accreditation_locked')
+      .select('is_accreditation_locked')
+      .limit(1)
       .maybeSingle();
 
-    const isAccreditationLocked = configRow?.value === 'true';
+    const isLocked = configRow?.is_accreditation_locked === true;
 
-    if (isAccreditationLocked) {
+    if (isLocked) {
       return {
-        error: 'Accreditation has officially closed by order of the Electoral Committee. Students who did not complete accreditation during the registration window are ineligible to vote.',
+        error: 'Accreditation has officially closed by order of the Electoral Committee. Unaccredited students are ineligible to vote.',
       };
     }
 
-    // First time accreditation
+    // If not locked, proceed to accreditation
     redirect('/accreditation');
   }
 

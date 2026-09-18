@@ -107,11 +107,11 @@ export async function getAccreditationStatus(): Promise<boolean> {
   const supabase = createAdminSupabaseClient();
   const { data } = await supabase
     .from('election_config')
-    .select('value')
-    .eq('key', 'accreditation_locked')
+    .select('is_accreditation_locked')
+    .limit(1)
     .maybeSingle();
 
-  return data?.value === 'true';
+  return data?.is_accreditation_locked === true;
 }
 
 // 2. Toggle Accreditation Lock
@@ -121,11 +121,8 @@ export async function toggleAccreditationLock(shouldLock: boolean) {
 
   const { error } = await supabase
     .from('election_config')
-    .upsert({
-      key: 'accreditation_locked',
-      value: shouldLock ? 'true' : 'false',
-      updated_at: new Date().toISOString(),
-    });
+    .update({ is_accreditation_locked: shouldLock })
+    .neq('id', '00000000-0000-0000-0000-000000000000'); // Updates the active config row
 
   if (error) {
     return { error: error.message };

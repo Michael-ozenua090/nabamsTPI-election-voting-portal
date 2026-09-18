@@ -79,7 +79,7 @@ export function ElectionControlPanel({ currentStatus, isAccreditationLocked }: {
           </div>
           <p className="text-xs text-slate-500 mt-1">
             {isAccreditationLocked
-              ? 'New students cannot register or upload ID cards. Only already-accredited students can vote.'
+              ? 'Accreditation is closed. Only students who already completed accreditation can vote.'
               : 'Eligible students can still complete first-time accreditation and set their PIN.'}
           </p>
         </div>
