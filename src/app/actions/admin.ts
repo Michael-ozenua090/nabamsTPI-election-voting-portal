@@ -139,7 +139,7 @@ export async function toggleAccreditationLock(shouldLock: boolean) {
 // ─────────────────────────────────────────────────────────────────────
 // Results — Final Tally (raw votes + adjustments)
 // ─────────────────────────────────────────────────────────────────────
-export async function getResults(): Promise<{ rows: ResultsRow[], totalRoll: number, accreditedVoters: number, ballotsCast: number, turnoutPercentage: string, error: string | null }> {
+export async function getResults(): Promise<{ rows: ResultsRow[], totalRoll: number, accreditedVoters: number, ballotsCast: number, turnoutPercentage: string, electionStatus: string, error: string | null }> {
   try {
     await requireAdmin();
     const supabase = createAdminSupabaseClient();
@@ -232,12 +232,22 @@ export async function getResults(): Promise<{ rows: ResultsRow[], totalRoll: num
       };
     });
 
+    // Fetch election status
+    const { data: configRow } = await supabase
+      .from('election_config')
+      .select('status')
+      .limit(1)
+      .maybeSingle();
+
+    const electionStatus = configRow?.status || 'pending';
+
     return { 
       rows, 
       totalRoll: safeTotalRoll, 
       accreditedVoters: safeAccredited, 
       ballotsCast: safeVoted, 
       turnoutPercentage, 
+      electionStatus,
       error: null 
     };
   } catch (err: any) {
@@ -248,6 +258,7 @@ export async function getResults(): Promise<{ rows: ResultsRow[], totalRoll: num
       accreditedVoters: 0,
       ballotsCast: 0,
       turnoutPercentage: '0.0',
+      electionStatus: 'pending',
       error: `Database connection error: ${err.message}. Please verify your SUPABASE_SERVICE_ROLE_KEY in .env.local.`,
     };
   }

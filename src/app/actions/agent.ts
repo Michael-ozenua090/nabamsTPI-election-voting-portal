@@ -32,7 +32,7 @@ export async function getAgentLiveResults() {
   try {
     const supabase = createAdminSupabaseClient();
 
-    const [posRes, candRes, votesRes, adjRes, totalRollRes, accreditedRes, votedRes] = await Promise.all([
+    const [posRes, candRes, votesRes, adjRes, totalRollRes, accreditedRes, votedRes, configRes] = await Promise.all([
       supabase.from('positions').select('*').order('display_order'),
       supabase.from('candidates').select('*'),
       supabase.from('votes').select('candidate_id'),
@@ -43,6 +43,7 @@ export async function getAgentLiveResults() {
         .not('accredited_at', 'is', null)
         .or('is_flagged.is.null,is_flagged.eq.false'),
       supabase.from('voters').select('*', { count: 'exact', head: true }).eq('has_voted', true),
+      supabase.from('election_config').select('status').limit(1).maybeSingle(),
     ]);
 
     // Map votes
@@ -82,6 +83,8 @@ export async function getAgentLiveResults() {
       ? ((safeVoted / safeAccredited) * 100).toFixed(1)
       : '0.0';
 
+    const electionStatus = configRes.data?.status || 'pending';
+
     return {
       positions,
       candidates,
@@ -89,6 +92,7 @@ export async function getAgentLiveResults() {
       accreditedVoters: safeAccredited,
       ballotsCast: safeVoted,
       turnoutPercentage,
+      electionStatus,
       error: null,
     };
   } catch (err: any) {
@@ -100,6 +104,7 @@ export async function getAgentLiveResults() {
       accreditedVoters: 0,
       ballotsCast: 0,
       turnoutPercentage: '0.0',
+      electionStatus: 'pending',
       error: 'Failed to fetch live results.',
     };
   }

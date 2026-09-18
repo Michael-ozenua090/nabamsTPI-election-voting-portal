@@ -6,9 +6,10 @@ import type { ResultsRow } from '@/types/database';
 
 interface ResultsBoardProps {
   rows: ResultsRow[];
+  electionStatus: string;
 }
 
-export function ResultsBoard({ rows }: ResultsBoardProps) {
+export function ResultsBoard({ rows, electionStatus }: ResultsBoardProps) {
   // Group by position
   const groups = rows.reduce<Record<string, {
     position_id: string;
@@ -33,20 +34,33 @@ export function ResultsBoard({ rows }: ResultsBoardProps) {
   return (
     <div className="space-y-8 mt-6">
       {/* Live Indicator Banner */}
-      <div className="flex items-center justify-between bg-sky-50/80 border border-sky-200 rounded-xl px-4 py-3">
-        <div className="flex items-center gap-2.5">
-          <span className="relative flex h-3 w-3">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-3 w-3 bg-sky-600"></span>
-          </span>
-          <p className="text-xs sm:text-sm font-semibold text-sky-950">
-            Live Election Results • Real-Time Ballot Tallying Active
-          </p>
+      {electionStatus === 'closed' ? (
+        <div className="flex items-center justify-between bg-emerald-50/80 border border-emerald-300 rounded-xl px-4 py-3">
+          <div className="flex items-center gap-2.5">
+            <span className="w-5 h-5 rounded-full bg-emerald-600 flex items-center justify-center text-white text-xs font-bold">
+              <i className="fa-solid fa-check"></i>
+            </span>
+            <p className="text-xs sm:text-sm font-bold text-emerald-950">
+              Official Final Results — Polls Closed
+            </p>
+          </div>
         </div>
-        <span className="text-xs font-medium text-sky-700 bg-white px-2.5 py-1 rounded-md border border-sky-200 shadow-sm">
-          Formula: Final = Raw + Adj
-        </span>
-      </div>
+      ) : (
+        <div className="flex items-center justify-between bg-sky-50/80 border border-sky-200 rounded-xl px-4 py-3">
+          <div className="flex items-center gap-2.5">
+            <span className="relative flex h-3 w-3">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-3 w-3 bg-sky-600"></span>
+            </span>
+            <p className="text-xs sm:text-sm font-semibold text-sky-950">
+              Live Election Results • Real-Time Ballot Tallying Active
+            </p>
+          </div>
+          <span className="text-xs font-medium text-sky-700 bg-white px-2.5 py-1 rounded-md border border-sky-200 shadow-sm">
+            Formula: Final = Raw + Adj
+          </span>
+        </div>
+      )}
 
       {/* Grid of Position Result Cards */}
       <div className="grid grid-cols-1 gap-8">
@@ -105,6 +119,8 @@ export function ResultsBoard({ rows }: ResultsBoardProps) {
                 ) : (
                   candidateResults.map((cand, idx) => {
                     const isLeader = hasVotes && cand.final_tally === highestVote && cand.final_tally > 0;
+                    const isClosed = electionStatus === 'closed';
+                    const isWinner = isClosed && isLeader;
 
                     return (
                       <div
@@ -148,11 +164,15 @@ export function ResultsBoard({ rows }: ResultsBoardProps) {
                                   {cand.full_name}
                                 </h4>
                                 
-                                {isLeader && (
-                                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-bold bg-amber-100 text-amber-900 border border-amber-300">
-                                    👑 Leading
+                                {isWinner ? (
+                                  <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-[10px] sm:text-xs font-black bg-emerald-100 text-emerald-900 border border-emerald-300 shadow-2xs">
+                                    <i className="fa-solid fa-trophy"></i> WINNER / ELECTED
                                   </span>
-                                )}
+                                ) : isLeader ? (
+                                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs font-bold bg-amber-100 text-amber-900 border border-amber-300 shadow-2xs">
+                                    <i className="fa-solid fa-crown text-amber-600"></i> Leading
+                                  </span>
+                                ) : null}
                               </div>
 
                               {/* Audit Subtext */}

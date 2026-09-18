@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { LoginForm } from './LoginForm';
 import { InstitutionalHeader } from '@/components/InstitutionalHeader';
+import { createAdminSupabaseClient } from '@/lib/supabase/server';
 
 export const metadata: Metadata = {
   title: 'NABAMS TPI - Executive Election Portal',
@@ -8,7 +9,16 @@ export const metadata: Metadata = {
     'Official voting portal for the National Association of Business Administration and Management Students, The Polytechnic Ibadan, Oyo State.',
 };
 
-export default function HomePage() {
+export default async function HomePage() {
+  const supabase = createAdminSupabaseClient();
+  const { data: config } = await supabase
+    .from('election_config')
+    .select('status')
+    .eq('id', 1)
+    .single();
+
+  const electionStatus = config?.status ?? 'pending';
+
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
       <InstitutionalHeader />
@@ -17,9 +27,19 @@ export default function HomePage() {
         <div className="w-full max-w-md space-y-6">
           {/* Welcome card */}
           <div className="bg-white border border-slate-200 shadow-sm rounded-2xl p-6 sm:p-8">
+            {electionStatus === 'closed' && (
+              <div className="mb-6 p-4 bg-amber-50 border border-amber-300 rounded-xl text-center">
+                <p className="text-sm font-bold text-amber-900">
+                  <i className="fa-solid fa-triangle-exclamation mr-1"></i> Polls are Officially Closed
+                </p>
+                <p className="text-xs text-amber-800 mt-1">
+                  The voting window for the 2026 Executive Election has ended. Ballot submission is disabled.
+                </p>
+              </div>
+            )}
             <div className="flex items-center gap-3 mb-6 pb-5 border-b border-slate-100">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-sky-50 border border-sky-200 flex-shrink-0">
-                <span className="text-xl" role="img" aria-label="Ballot box">🗳️</span>
+                <span className="text-xl text-sky-700" role="img" aria-label="Ballot box"><i className="fa-solid fa-check-to-slot"></i></span>
               </div>
               <div>
                 <h1 className="text-base font-bold text-slate-900 leading-tight">Voter Accreditation</h1>

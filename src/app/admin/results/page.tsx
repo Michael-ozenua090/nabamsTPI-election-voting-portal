@@ -9,7 +9,7 @@ export const metadata: Metadata = { title: 'Live Results — NABAMS TPI Election
 export const dynamic = 'force-dynamic';
 
 export default async function ResultsPage() {
-  const { rows, totalRoll, accreditedVoters, ballotsCast, turnoutPercentage, error } = await getResults();
+  const { rows, totalRoll, accreditedVoters, ballotsCast, turnoutPercentage, electionStatus, error } = await getResults();
 
   if (error) {
     return (
@@ -35,7 +35,9 @@ export default async function ResultsPage() {
     <div className="p-6 space-y-8 max-w-5xl mx-auto">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Live Results</h1>
+          <h1 className="text-2xl font-bold text-slate-900">
+            {electionStatus === 'closed' ? 'Official Final Results — Polls Closed' : 'Live Results'}
+          </h1>
           <p className="mt-1 text-xs font-medium text-slate-600">
             Final Tally = Raw Votes + Administrative Adjustments
           </p>
@@ -43,7 +45,7 @@ export default async function ResultsPage() {
         <RefreshResultsButton />
       </div>
       <TurnoutCards totalRoll={totalRoll} accreditedVoters={accreditedVoters} ballotsCast={ballotsCast} turnoutPercentage={turnoutPercentage} />
-      <ResultsBoard rows={rows} />
+      <ResultsBoard rows={rows} electionStatus={electionStatus} />
     </div>
   );
 }

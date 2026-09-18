@@ -28,6 +28,7 @@ interface AgentData {
   accreditedVoters: number;
   ballotsCast: number;
   turnoutPercentage: string;
+  electionStatus: string;
   error: string | null;
 }
 
@@ -109,18 +110,39 @@ export default function AgentDashboard({ initialData }: { initialData: AgentData
 
       {/* ── LIVE INDICATOR & TURNOUT BAR ── */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="md:col-span-1 bg-gradient-to-br from-sky-50 to-sky-100 border border-sky-200 rounded-2xl p-5 flex flex-col justify-center relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-sky-200 rounded-full blur-3xl opacity-50 -mr-10 -mt-10"></div>
-          <div className="relative z-10 flex items-center gap-3 mb-2">
-            <span className="relative flex h-3.5 w-3.5">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-sky-600"></span>
+        {data.electionStatus === 'closed' ? (
+          <div className="md:col-span-4 bg-emerald-50 border-2 border-emerald-300 rounded-2xl p-4 flex items-center justify-between shadow-xs mb-2">
+            <div className="flex items-center gap-3">
+              <span className="w-6 h-6 rounded-full bg-emerald-600 flex items-center justify-center text-white text-xs font-bold">
+                <i className="fa-solid fa-check"></i>
+              </span>
+              <div>
+                <h3 className="text-sm sm:text-base font-extrabold text-emerald-950">
+                  ELECTION CONCLUDED — OFFICIAL FINAL RESULTS
+                </h3>
+                <p className="text-xs text-emerald-800">
+                  Polls have officially closed. All candidate tallies and winners below are certified.
+                </p>
+              </div>
+            </div>
+            <span className="hidden sm:inline-block px-3 py-1 bg-white border border-emerald-300 rounded-full text-xs font-black text-emerald-800 uppercase tracking-wider shadow-2xs">
+              Closed
             </span>
-            <span className="font-bold text-sky-900">Live Tally Active</span>
           </div>
-          <p className="text-sm text-sky-700 font-medium z-10">Refreshes every {secondsToRefresh}s</p>
-          {isRefreshing && <p className="text-xs text-sky-600 mt-1 z-10 animate-pulse">Syncing now...</p>}
-        </div>
+        ) : (
+          <div className="md:col-span-1 bg-gradient-to-br from-sky-50 to-sky-100 border border-sky-200 rounded-2xl p-5 flex flex-col justify-center relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-sky-200 rounded-full blur-3xl opacity-50 -mr-10 -mt-10"></div>
+            <div className="relative z-10 flex items-center gap-3 mb-2">
+              <span className="relative flex h-3.5 w-3.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-sky-600"></span>
+              </span>
+              <span className="font-bold text-sky-900">Live Tally Active</span>
+            </div>
+            <p className="text-sm text-sky-700 font-medium z-10">Refreshes every {secondsToRefresh}s</p>
+            {isRefreshing && <p className="text-xs text-sky-600 mt-1 z-10 animate-pulse">Syncing now...</p>}
+          </div>
+        )}
 
         <div className="bg-white border border-slate-200 shadow-sm rounded-2xl p-5 flex items-center gap-4">
           <div className="w-12 h-12 bg-slate-100 rounded-xl flex items-center justify-center text-slate-500 flex-shrink-0">
@@ -189,6 +211,8 @@ export default function AgentDashboard({ initialData }: { initialData: AgentData
                 ) : (
                   sortedCandidates.map((cand, idx) => {
                     const isLeader = hasVotes && cand.finalVotes === highestVote && !cand.is_disqualified;
+                    const isClosed = data.electionStatus === 'closed';
+                    const isWinner = isClosed && isLeader && cand.finalVotes > 0;
 
                     return (
                       <div 
@@ -225,11 +249,15 @@ export default function AgentDashboard({ initialData }: { initialData: AgentData
                                 <h4 className="text-sm sm:text-base md:text-lg font-bold text-slate-900 leading-tight break-words">
                                   {cand.full_name}
                                 </h4>
-                                {isLeader && (
-                                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-bold bg-amber-100 text-amber-900 border border-amber-300">
-                                    👑 Leading
+                                {isWinner ? (
+                                  <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-[10px] sm:text-xs font-black bg-emerald-100 text-emerald-900 border border-emerald-300 shadow-2xs">
+                                    <i className="fa-solid fa-trophy"></i> WINNER / ELECTED
                                   </span>
-                                )}
+                                ) : isLeader && cand.finalVotes > 0 ? (
+                                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs font-bold bg-amber-100 text-amber-900 border border-amber-300 shadow-2xs">
+                                    <i className="fa-solid fa-crown text-amber-600"></i> Leading
+                                  </span>
+                                ) : null}
                                 {cand.is_disqualified && (
                                   <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-bold bg-red-100 text-red-800 border border-red-200">
                                     Disqualified
