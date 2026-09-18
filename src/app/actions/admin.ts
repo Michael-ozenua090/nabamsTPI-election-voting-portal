@@ -101,7 +101,7 @@ export async function setElectionStatus(status: ElectionStatus) {
 // ─────────────────────────────────────────────────────────────────────
 // Results — Final Tally (raw votes + adjustments)
 // ─────────────────────────────────────────────────────────────────────
-export async function getResults(): Promise<{ rows: ResultsRow[], totalVoters: number, totalVoted: number, error: string | null }> {
+export async function getResults(): Promise<{ rows: ResultsRow[], totalRoll: number, accreditedVoters: number, ballotsCast: number, turnoutPercentage: string, error: string | null }> {
   try {
     await requireAdmin();
     const supabase = createAdminSupabaseClient();
@@ -127,17 +127,34 @@ export async function getResults(): Promise<{ rows: ResultsRow[], totalVoters: n
 
     if (candErr) throw new Error(candErr.message);
 
-    // Voter Turnout
-    const { count: totalVoters, error: v1Err } = await supabase
+    // 1. Total on the general departmental roll (860)
+    const { count: totalRoll, error: v1Err } = await supabase
       .from('voters')
       .select('*', { count: 'exact', head: true });
     if (v1Err) throw new Error(v1Err.message);
 
-    const { count: totalVoted, error: v2Err } = await supabase
+    // 2. Actually Accredited & Eligible (Completed accreditation & NOT flagged)
+    const { count: accreditedCount, error: v2Err } = await supabase
+      .from('voters')
+      .select('*', { count: 'exact', head: true })
+      .not('accredited_at', 'is', null)
+      .or('is_flagged.is.null,is_flagged.eq.false');
+    if (v2Err) throw new Error(v2Err.message);
+
+    // 3. Ballots Cast
+    const { count: votedCount, error: v3Err } = await supabase
       .from('voters')
       .select('*', { count: 'exact', head: true })
       .eq('has_voted', true);
-    if (v2Err) throw new Error(v2Err.message);
+    if (v3Err) throw new Error(v3Err.message);
+
+    const safeAccredited = accreditedCount || 0;
+    const safeVoted = votedCount || 0;
+    const safeTotalRoll = totalRoll || 860;
+
+    const turnoutPercentage = safeAccredited > 0
+      ? ((safeVoted / safeAccredited) * 100).toFixed(1)
+      : '0.0';
 
     // Build tally map
     const rawMap: Record<string, number> = {};
@@ -177,13 +194,22 @@ export async function getResults(): Promise<{ rows: ResultsRow[], totalVoters: n
       };
     });
 
-    return { rows, totalVoters: totalVoters || 0, totalVoted: totalVoted || 0, error: null };
+    return { 
+      rows, 
+      totalRoll: safeTotalRoll, 
+      accreditedVoters: safeAccredited, 
+      ballotsCast: safeVoted, 
+      turnoutPercentage, 
+      error: null 
+    };
   } catch (err: any) {
     console.error('[Admin Results Action] Error fetching results:', err.message);
     return {
       rows: [],
-      totalVoters: 0,
-      totalVoted: 0,
+      totalRoll: 0,
+      accreditedVoters: 0,
+      ballotsCast: 0,
+      turnoutPercentage: '0.0',
       error: `Database connection error: ${err.message}. Please verify your SUPABASE_SERVICE_ROLE_KEY in .env.local.`,
     };
   }

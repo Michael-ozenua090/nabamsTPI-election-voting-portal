@@ -24,8 +24,10 @@ interface Position {
 interface AgentData {
   positions: Position[];
   candidates: Candidate[];
-  totalVoters: number;
-  totalVoted: number;
+  totalRoll: number;
+  accreditedVoters: number;
+  ballotsCast: number;
+  turnoutPercentage: string;
   error: string | null;
 }
 
@@ -64,9 +66,8 @@ export default function AgentDashboard({ initialData }: { initialData: AgentData
     router.push('/agent/login');
   };
 
-  const turnoutPct = data.totalVoters > 0 
-    ? ((data.totalVoted / data.totalVoters) * 100).toFixed(1)
-    : '0.0';
+  // Turnout percentage is pre-calculated by server
+  const turnoutPct = data.turnoutPercentage;
 
   if (data.error && data.positions.length === 0) {
     return (
@@ -126,8 +127,9 @@ export default function AgentDashboard({ initialData }: { initialData: AgentData
             <Users className="w-6 h-6" />
           </div>
           <div>
-            <p className="text-sm font-semibold text-slate-500">Eligible Voters</p>
-            <p className="text-2xl font-black text-slate-900">{data.totalVoters.toLocaleString()}</p>
+            <p className="text-xs font-bold uppercase tracking-wider text-slate-500">Accredited Voters</p>
+            <p className="text-2xl font-black text-slate-900">{data.accreditedVoters.toLocaleString()}</p>
+            <p className="text-xs text-sky-700 font-medium mt-0.5">Eligible to vote • Out of {data.totalRoll} on roll</p>
           </div>
         </div>
 
@@ -136,8 +138,9 @@ export default function AgentDashboard({ initialData }: { initialData: AgentData
             <FileText className="w-6 h-6" />
           </div>
           <div>
-            <p className="text-sm font-semibold text-slate-500">Ballots Cast</p>
-            <p className="text-2xl font-black text-slate-900">{data.totalVoted.toLocaleString()}</p>
+            <p className="text-xs font-bold uppercase tracking-wider text-slate-500">Ballots Cast</p>
+            <p className="text-2xl font-black text-slate-900">{data.ballotsCast.toLocaleString()}</p>
+            <p className="text-xs text-slate-500 font-medium mt-0.5">{Math.max(0, data.accreditedVoters - data.ballotsCast)} accredited yet to vote</p>
           </div>
         </div>
 
@@ -146,8 +149,9 @@ export default function AgentDashboard({ initialData }: { initialData: AgentData
             <Activity className="w-6 h-6" />
           </div>
           <div>
-            <p className="text-sm font-semibold text-slate-500">Turnout</p>
-            <p className="text-2xl font-black text-slate-900">{turnoutPct}%</p>
+            <p className="text-xs font-bold uppercase tracking-wider text-slate-500">Accredited Turnout</p>
+            <p className="text-2xl font-black text-slate-900">{data.turnoutPercentage}%</p>
+            <p className="text-xs text-slate-500 font-medium mt-0.5">{data.totalRoll > 0 ? ((data.ballotsCast / data.totalRoll) * 100).toFixed(1) : 0}% of total roll ({data.totalRoll})</p>
           </div>
         </div>
       </div>

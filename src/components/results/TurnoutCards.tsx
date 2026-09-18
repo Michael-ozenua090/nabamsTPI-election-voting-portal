@@ -1,59 +1,72 @@
 'use client';
 
-import { Users, CheckSquare, TrendingUp } from 'lucide-react';
+import { Users, Vote, TrendingUp } from 'lucide-react';
 
 interface TurnoutCardsProps {
-  totalEligible: number;
-  totalVoted: number;
+  totalRoll: number;
+  accreditedVoters: number;
+  ballotsCast: number;
+  turnoutPercentage: string;
 }
 
-export function TurnoutCards({ totalEligible, totalVoted }: TurnoutCardsProps) {
-  const turnoutPct =
-    totalEligible > 0 ? Math.round((totalVoted / totalEligible) * 100) : 0;
-
-  const cards = [
-    {
-      label: 'Eligible Voters',
-      value: totalEligible.toLocaleString(),
-      subtext: 'ND1 + HND1 (Full Time & DPP)',
-      icon: Users,
-    },
-    {
-      label: 'Ballots Cast',
-      value: totalVoted.toLocaleString(),
-      subtext: `${totalEligible - totalVoted} yet to vote`,
-      icon: CheckSquare,
-    },
-    {
-      label: 'Voter Turnout',
-      value: `${turnoutPct}%`,
-      subtext: turnoutPct >= 50 ? 'Quorum reached ✓' : 'Below 50%',
-      icon: TrendingUp,
-    },
-  ];
-
+export function TurnoutCards({ totalRoll, accreditedVoters, ballotsCast, turnoutPercentage }: TurnoutCardsProps) {
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-      {cards.map((card) => {
-        const Icon = card.icon;
-        return (
-          <div
-            key={card.label}
-            className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm flex items-center justify-between"
-          >
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-                {card.label}
-              </p>
-              <p className="mt-1 text-3xl font-extrabold text-slate-900">{card.value}</p>
-              <p className="mt-1 text-xs text-sky-700 font-medium">{card.subtext}</p>
-            </div>
-            <div className="w-10 h-10 rounded-lg bg-sky-50 border border-sky-100 flex items-center justify-center flex-shrink-0">
-              <Icon className="h-5 w-5 text-sky-600" aria-hidden />
-            </div>
-          </div>
-        );
-      })}
+    <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+      
+      {/* Card 1: Accredited Voters */}
+      <div className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-sm flex items-center justify-between">
+        <div>
+          <p className="text-xs font-bold uppercase tracking-wider text-slate-500">
+            Accredited Voters
+          </p>
+          <p className="text-3xl font-black text-slate-900 mt-1 tracking-tight">
+            {accreditedVoters}
+          </p>
+          <p className="text-xs text-sky-700 font-medium mt-1">
+            Eligible to vote • Out of {totalRoll} on roll
+          </p>
+        </div>
+        <div className="w-12 h-12 rounded-xl bg-sky-50 text-sky-600 border border-sky-100 flex items-center justify-center flex-shrink-0">
+          <Users className="w-6 h-6" />
+        </div>
+      </div>
+
+      {/* Card 2: Ballots Cast */}
+      <div className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-sm flex items-center justify-between">
+        <div>
+          <p className="text-xs font-bold uppercase tracking-wider text-slate-500">
+            Ballots Cast
+          </p>
+          <p className="text-3xl font-black text-slate-900 mt-1 tracking-tight">
+            {ballotsCast}
+          </p>
+          <p className="text-xs text-slate-500 font-medium mt-1">
+            {Math.max(0, accreditedVoters - ballotsCast)} accredited yet to vote
+          </p>
+        </div>
+        <div className="w-12 h-12 rounded-xl bg-sky-50 text-sky-600 border border-sky-100 flex items-center justify-center flex-shrink-0">
+          <Vote className="w-6 h-6" />
+        </div>
+      </div>
+
+      {/* Card 3: Voter Turnout */}
+      <div className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-sm flex items-center justify-between">
+        <div>
+          <p className="text-xs font-bold uppercase tracking-wider text-slate-500">
+            Accredited Turnout
+          </p>
+          <p className="text-3xl font-black text-slate-900 mt-1 tracking-tight">
+            {turnoutPercentage}%
+          </p>
+          <p className="text-xs text-slate-500 font-medium mt-1">
+            {totalRoll > 0 ? ((ballotsCast / totalRoll) * 100).toFixed(1) : 0}% of total roll ({totalRoll})
+          </p>
+        </div>
+        <div className="w-12 h-12 rounded-xl bg-sky-50 text-sky-600 border border-sky-100 flex items-center justify-center flex-shrink-0">
+          <TrendingUp className="w-6 h-6" />
+        </div>
+      </div>
+
     </div>
   );
 }
