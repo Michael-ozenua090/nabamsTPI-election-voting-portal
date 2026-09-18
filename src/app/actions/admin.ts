@@ -119,12 +119,14 @@ export async function toggleAccreditationLock(shouldLock: boolean) {
   await requireAdmin();
   const supabase = createAdminSupabaseClient();
 
+  // Update using integer-safe condition
   const { error } = await supabase
     .from('election_config')
     .update({ is_accreditation_locked: shouldLock })
-    .neq('id', '00000000-0000-0000-0000-000000000000'); // Updates the active config row
+    .not('id', 'is', null);
 
   if (error) {
+    console.error('[toggleAccreditationLock Error]:', error.message);
     return { error: error.message };
   }
 
